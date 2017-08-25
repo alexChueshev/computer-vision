@@ -1,12 +1,12 @@
 #include "utils.h"
 
 pi::Image pi::utils::loadImage(const std::string &path) {
-    auto data = cv::imread(path);
+    auto data = cv::imread(path, cv::IMREAD_COLOR);
     pi::Image image(data);
     return image;
 }
 
-void pi::utils::saveImage(const Image& image, const std::string& path) {
+void pi::utils::saveImage(const Image &image, const std::string &path) {
     cv::imwrite(path, image.pureData());
 }
 

@@ -16,9 +16,11 @@ public:
     explicit Image(const cv::Mat &image);
 
     int height() const;
+
     int width() const;
 
     cv::Mat pureData() const;
+
     Image clone();
 };
 
