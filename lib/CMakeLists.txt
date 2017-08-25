@@ -4,8 +4,7 @@ set(OpenCV_FOUND 1)
 find_package(OpenCV REQUIRED)
 
 add_library(lib
-        src/image.cpp
-        inc/image.h
-)
+        src/image.cpp inc/image.h
+        src/utils.cpp inc/utils.h)
 
 target_link_libraries(lib ${OpenCV_LIBS})

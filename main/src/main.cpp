@@ -1,12 +1,16 @@
 #include <iostream>
 
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
 #include <image.h>
+#include <utils.h>
 
 int main() {
-    pi::Image i;
+
     std::cout << "Hello, World!" << std::endl;
+
+    auto image = pi::utils::loadImage("/home/alexander/test.png");
+
+    pi::utils::saveImage(image, "/home/alexander/test01.png");
+    pi::utils::renderImage(image, "original image");
+
     return 0;
 }
