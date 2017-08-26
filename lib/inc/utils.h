@@ -1,7 +1,6 @@
 #ifndef COMPUTER_VISION_UTILS_H
 #define COMPUTER_VISION_UTILS_H
 
-#include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 
