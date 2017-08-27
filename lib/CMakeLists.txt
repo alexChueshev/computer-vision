@@ -6,7 +6,6 @@ find_package(OpenCV REQUIRED)
 add_library(lib
         src/image.cpp inc/image.h
         src/utils.cpp inc/utils.h
-        src/operations.cpp inc/operations.h
-        )
+        src/operations.cpp inc/operations.h)
 
 target_link_libraries(lib ${OpenCV_LIBS})

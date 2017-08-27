@@ -9,11 +9,18 @@ namespace pi {
 
 class pi::Image {
 
+public:
+    typedef std::function<void(cv::Mat &src)> Operation;
+
 private:
     cv::Mat image;
 
 public:
     explicit Image(const cv::Mat &image);
+
+    void operation(const Operation &opt);
+
+    void operations(std::initializer_list<Operation> opts);
 
     int height() const;
 

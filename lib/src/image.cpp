@@ -5,6 +5,16 @@ pi::Image::Image(const cv::Mat &image) {
     this->image = image;
 }
 
+void pi::Image::operation(const Operation &opt) {
+    opt(this->image);
+}
+
+void pi::Image::operations(std::initializer_list<pi::Image::Operation> opts) {
+    for(auto opt: opts) {
+        opt(this->image);
+    }
+}
+
 int pi::Image::width() const {
     return this->image.cols;
 }

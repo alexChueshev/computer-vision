@@ -1,29 +1,31 @@
 #include "operations.h"
 
-pi::Image pi::opts::grayscale(const Image &src) {
-    cv::Mat grayscale(src.height(), src.width(), CV_8UC1);
-    pi::Image dst(grayscale);
+void pi::opts::grayscale(cv::Mat &src) {
+    assert(src.depth() == CV_8U);
+    assert(src.channels() == 3);
 
-    auto srcData = src.pureData();
-    auto srcIt = srcData.begin<cv::Vec3b>(),
-            srcEnd = srcData.end<cv::Vec3b>();
+    cv::Mat grayscale(src.rows, src.cols, CV_8UC1);
+
+    auto srcIt = src.begin<cv::Vec3b>(),
+            srcEnd = src.end<cv::Vec3b>();
 
     for (auto gIt = grayscale.begin<uchar>(),
                  gEnd = grayscale.end<uchar>(); gIt != gEnd; ++srcIt, ++gIt) {
         *gIt = (uchar) (.299 * (*srcIt)[2] + .587 * (*srcIt)[1] + .114 * (*srcIt)[0]);
     }
 
-    normalize(dst);
-    return dst;
+    src = std::move(grayscale);
 }
 
-void pi::opts::normalize(Image &src) {
-    auto min = .0, max = .0;
-    auto srcData = src.pureData();
+void pi::opts::normalize(cv::Mat &src) {
+    assert(src.depth() == CV_8U);
+    assert(src.channels() == 1);
 
-    cv::minMaxLoc(src.pureData(), &min, &max);
-    for (auto it = srcData.begin<uchar>(),
-                 end = srcData.end<uchar>(); it != end; ++it) {
+    auto min = .0, max = .0;
+
+    cv::minMaxLoc(src, &min, &max);
+    for (auto it = src.begin<uchar>(),
+                 end = src.end<uchar>(); it != end; ++it) {
         *it = (*it - min) * (UCHAR_MAX / (max - min));
     }
 }

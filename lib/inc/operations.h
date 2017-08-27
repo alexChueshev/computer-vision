@@ -4,9 +4,9 @@
 #include <image.h>
 
 namespace pi::opts {
-    Image grayscale(const Image &src);
+    void grayscale(cv::Mat &src);
 
-    void normalize(Image &src);
+    void normalize(cv::Mat &src);
 }
 
 #endif //COMPUTER_VISION_OPERATIONS_H
