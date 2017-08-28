@@ -1,3 +1,4 @@
+#include <opencv/cv.hpp>
 #include "operations.h"
 
 void pi::opts::grayscale(cv::Mat &src) {
@@ -11,7 +12,8 @@ void pi::opts::grayscale(cv::Mat &src) {
 
     for (auto gIt = grayscale.begin<uchar>(),
                  gEnd = grayscale.end<uchar>(); gIt != gEnd; ++srcIt, ++gIt) {
-        *gIt = (uchar) (.299 * (*srcIt)[2] + .587 * (*srcIt)[1] + .114 * (*srcIt)[0]);
+        *gIt = cv::saturate_cast<uchar>
+                (.299 * (*srcIt)[2] + .587 * (*srcIt)[1] + .114 * (*srcIt)[0]);
     }
 
     src = std::move(grayscale);
