@@ -1,4 +1,3 @@
-#include <opencv2/imgcodecs.hpp>
 #include "image.h"
 
 pi::Image::Image(const cv::Mat &image) {
@@ -10,7 +9,7 @@ void pi::Image::operation(const Operation &opt) {
 }
 
 void pi::Image::operations(std::initializer_list<pi::Image::Operation> opts) {
-    for(auto opt: opts) {
+    for(const auto &opt: opts) {
         opt(this->image);
     }
 }

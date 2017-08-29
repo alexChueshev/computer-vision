@@ -1,4 +1,3 @@
-#include <opencv/cv.hpp>
 #include "operations.h"
 
 void pi::opts::grayscale(cv::Mat &src) {
