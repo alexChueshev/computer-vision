@@ -8,6 +8,7 @@ add_library(lib
         src/utils.cpp inc/utils.h
         src/operations.cpp inc/operations.h
         src/kernels.cpp inc/kernels.h
-        )
+        src/filters.cpp inc/filters.h
+        src/borders.cpp inc/borders.h)
 
 target_link_libraries(lib ${OpenCV_LIBS})
