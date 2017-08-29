@@ -39,6 +39,8 @@ private:
 public:
     SeparableKernel(const Array1d &mRow, const Array1d &mCol);
 
+    SeparableKernel(Array1d &&mRow, Array1d &&mCol);
+
     void apply(cv::Mat &src, const borders::Function &fBorder) override;
 };
 

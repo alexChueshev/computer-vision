@@ -14,6 +14,12 @@ pi::kernels::SeparableKernel::SeparableKernel(const Array1d &mRow, const Array1d
     this->mCol = mCol;
 }
 
+pi::kernels::SeparableKernel::SeparableKernel(Array1d &&mRow, Array1d &&mCol)
+        : Kernel(mRow.size(), mCol.size()) {
+    this->mRow = std::move(mRow);
+    this->mCol = std::move(mCol);
+}
+
 void pi::kernels::SeparableKernel::apply(cv::Mat &src, const borders::Function &fBorder) {
     assert(src.type() == CV_32FC1);
 

@@ -4,6 +4,10 @@ pi::Image::Image(const cv::Mat &image) {
     this->image = image.clone();
 }
 
+pi::Image::Image(cv::Mat &&image) {
+    this->image = std::move(image);
+}
+
 void pi::Image::operation(const Operation &opt) {
     opt(this->image);
 }

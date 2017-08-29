@@ -1,9 +1,7 @@
 #include "utils.h"
 
 pi::Image pi::utils::loadImage(const std::string &path) {
-    auto data = cv::imread(path, cv::IMREAD_COLOR);
-    pi::Image image(data);
-    return image;
+    return pi::Image(cv::imread(path, cv::IMREAD_COLOR));
 }
 
 void pi::utils::saveImage(const Image &image, const std::string &path) {

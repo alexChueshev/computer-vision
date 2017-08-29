@@ -18,6 +18,8 @@ private:
 public:
     explicit Image(const cv::Mat &image);
 
+    explicit Image(cv::Mat &&image);
+
     void operation(const Operation &opt);
 
     void operations(std::initializer_list<Operation> opts);
