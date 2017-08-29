@@ -11,13 +11,23 @@ namespace pi::borders {
         BORDER_WRAP
     };
 
-    int constant(int row, int col, const cv::Mat &src);
+    class Factory;
 
-    int replicate(int row, int col, const cv::Mat &src);
+    float constant(int row, int col, const cv::Mat &src);
 
-    int reflect(int row, int col, const cv::Mat &src);
+    float replicate(int row, int col, const cv::Mat &src);
 
-    int wrap(int row, int col, const cv::Mat &src);
+    float reflect(int row, int col, const cv::Mat &src);
+
+    float wrap(int row, int col, const cv::Mat &src);
 }
+
+class pi::borders::Factory {
+
+public:
+    typedef std::function<float(int, int, const cv::Mat&)> Function;
+public:
+    static Function get(pi::borders::BorderTypes border);
+};
 
 #endif //COMPUTER_VISION_BORDERS_H

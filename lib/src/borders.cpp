@@ -1,6 +1,20 @@
 #include "borders.h"
 
-int pi::borders::constant(int row, int col, const cv::Mat &src) {
+pi::borders::Factory::Function pi::borders::Factory::get(pi::borders::BorderTypes border) {
+    switch (border) {
+        case BORDER_REPLICATE:
+            return replicate;
+        case BORDER_REFLECT:
+            return reflect;
+        case BORDER_WRAP:
+            return wrap;
+        case BORDER_CONSTANT:
+        default:
+            return constant;
+    }
+}
+
+float pi::borders::constant(int row, int col, const cv::Mat &src) {
     assert(src.type() == CV_32FC1);
 
     auto height = src.rows, width = src.cols;
@@ -11,7 +25,7 @@ int pi::borders::constant(int row, int col, const cv::Mat &src) {
     return 0;
 }
 
-int pi::borders::replicate(int row, int col, const cv::Mat &src) {
+float pi::borders::replicate(int row, int col, const cv::Mat &src) {
     assert(src.type() == CV_32FC1);
 
     std::function<int(int, int)> range = [](int dimension, int pos){
@@ -26,7 +40,7 @@ int pi::borders::replicate(int row, int col, const cv::Mat &src) {
     return src.at<float>(nRow,nCol);
 }
 
-int pi::borders::reflect(int row, int col, const cv::Mat &src) {
+float pi::borders::reflect(int row, int col, const cv::Mat &src) {
     assert(src.type() == CV_32FC1);
 
     std::function<int(int, int)> range = [](int dimension, int pos){
@@ -41,7 +55,7 @@ int pi::borders::reflect(int row, int col, const cv::Mat &src) {
     return src.at<float>(nRow,nCol);
 }
 
-int pi::borders::wrap(int row, int col, const cv::Mat &src) {
+float pi::borders::wrap(int row, int col, const cv::Mat &src) {
     assert(src.type() == CV_32FC1);
 
     auto height = src.rows, width = src.cols;

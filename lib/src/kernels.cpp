@@ -1,8 +1,8 @@
 #include "kernels.h"
 
 pi::kernels::Kernel::Kernel(int width, int height) {
-    assert(width <= 0 || height <= 0);
-    assert(width % 2 == 0 || height % 2 == 0);
+    assert(width > 0 && height > 0);
+    assert(width % 2 == 1 && height % 2 == 1);
 
     this->width = width;
     this->height = height;
