@@ -6,15 +6,22 @@
 #include <filters.h>
 
 int main() {
-    auto oImage = pi::utils::loadImage("/home/alexander/test.png");
+    auto oImage = pi::utils::loadImage("/home/alexander/Lenna.png");
     auto pImage = oImage.clone();
 
     //grayscale + normalization
     pImage.operations({pi::opts::grayscale, pi::opts::normalize});
 
-   // pi::filters::Gaussian g(1);
-   // auto img = pImage.pureData();
-   // g.apply(img, pi::borders::BorderTypes::BORDER_CONSTANT);
+    auto img = pImage.pureData();
+
+    pi::filters::Gaussian g(1);
+    g.apply(img, pi::borders::BorderTypes::BORDER_REPLICATE);
+
+    pi::filters::Sobel s;
+    s.apply(img, pi::borders::BorderTypes::BORDER_REPLICATE);
+
+    pImage.operation(pi::opts::normalize);
+
 
     pi::utils::saveImage(pImage, "/home/alexander/test01.png");
     pi::utils::renderImage(pImage, "original image");

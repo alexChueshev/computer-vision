@@ -5,8 +5,7 @@ void pi::opts::grayscale(cv::Mat &src) {
 
     cv::Mat grayscale(src.rows, src.cols, CV_32FC1);
 
-    auto srcIt = src.begin<cv::Vec3b>(),
-            srcEnd = src.end<cv::Vec3b>();
+    auto srcIt = src.begin<cv::Vec3b>();
 
     for (auto gIt = grayscale.begin<float>(),
                  gEnd = grayscale.end<float>(); gIt != gEnd; ++srcIt, ++gIt) {
@@ -24,6 +23,6 @@ void pi::opts::normalize(cv::Mat &src) {
     cv::minMaxLoc(src, &min, &max);
     for (auto it = src.begin<uchar>(),
                  end = src.end<uchar>(); it != end; ++it) {
-        *it = (*it - min) * (1 / (max - min));
+        *it = (*it - min) / (max - min);
     }
 }
