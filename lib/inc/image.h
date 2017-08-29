@@ -10,7 +10,7 @@ namespace pi {
 class pi::Image {
 
 public:
-    typedef std::function<void(cv::Mat &src)> Operation;
+    typedef std::function<void(cv::Mat &)> Operation;
 
 private:
     cv::Mat image;

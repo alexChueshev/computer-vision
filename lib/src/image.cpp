@@ -1,7 +1,7 @@
 #include "image.h"
 
 pi::Image::Image(const cv::Mat &image) {
-    this->image = image;
+    this->image = image.clone();
 }
 
 void pi::Image::operation(const Operation &opt) {
