@@ -3,6 +3,8 @@
 
 #include <opencv2/core.hpp>
 
+#include <borders.h>
+
 #include <memory>
 #include <vector>
 
@@ -24,7 +26,7 @@ protected:
 public:
     Kernel(int width, int height);
 
-    virtual void apply(cv::Mat &bordered) = 0;
+    virtual void apply(cv::Mat &src, const borders::Function &fBorder) = 0;
 };
 
 
@@ -37,7 +39,7 @@ private:
 public:
     SeparableKernel(const Array1d &mRow, const Array1d &mCol);
 
-    void apply(cv::Mat &bordered) override;
+    void apply(cv::Mat &src, const borders::Function &fBorder) override;
 };
 
 #endif //COMPUTER_VISION_KERNEL_H

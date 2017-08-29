@@ -1,7 +1,6 @@
 #ifndef COMPUTER_VISION_FILTERS_H
 #define COMPUTER_VISION_FILTERS_H
 
-#include <borders.h>
 #include <kernels.h>
 
 namespace pi::filters {

@@ -24,6 +24,6 @@ void pi::opts::normalize(cv::Mat &src) {
     cv::minMaxLoc(src, &min, &max);
     for (auto it = src.begin<uchar>(),
                  end = src.end<uchar>(); it != end; ++it) {
-        *it = (*it - min) * (UCHAR_MAX / (max - min));
+        *it = (*it - min) * (1 / (max - min));
     }
 }

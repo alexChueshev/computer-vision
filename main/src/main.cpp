@@ -12,8 +12,9 @@ int main() {
     //grayscale + normalization
     pImage.operations({pi::opts::grayscale, pi::opts::normalize});
 
-    auto f = pi::borders::Factory::get();
-    auto s = f(2,2,cv::Mat(5,5, CV_32FC1));
+   // pi::filters::Gaussian g(1);
+   // auto img = pImage.pureData();
+   // g.apply(img, pi::borders::BorderTypes::BORDER_CONSTANT);
 
     pi::utils::saveImage(pImage, "/home/alexander/test01.png");
     pi::utils::renderImage(pImage, "original image");

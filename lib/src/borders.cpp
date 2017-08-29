@@ -1,6 +1,6 @@
 #include "borders.h"
 
-pi::borders::Factory::Function pi::borders::Factory::get(pi::borders::BorderTypes border) {
+pi::borders::Function pi::borders::Factory::get(pi::borders::BorderTypes border) {
     switch (border) {
         case BORDER_REPLICATE:
             return replicate;
@@ -59,7 +59,7 @@ float pi::borders::wrap(int row, int col, const cv::Mat &src) {
     assert(src.type() == CV_32FC1);
 
     auto height = src.rows, width = src.cols;
-    auto nRow = (height + row) % height, nCol = (width + col) % col;
+    auto nRow = (height + row) % height, nCol = (width + col) % width;
 
     return src.at<float>(nRow,nCol);
 }

@@ -13,6 +13,8 @@ namespace pi::borders {
 
     class Factory;
 
+    typedef std::function<float(int, int, const cv::Mat&)> Function;
+
     float constant(int row, int col, const cv::Mat &src);
 
     float replicate(int row, int col, const cv::Mat &src);
@@ -24,8 +26,6 @@ namespace pi::borders {
 
 class pi::borders::Factory {
 
-public:
-    typedef std::function<float(int, int, const cv::Mat&)> Function;
 public:
     static Function get(pi::borders::BorderTypes border);
 };

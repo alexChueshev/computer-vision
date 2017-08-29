@@ -14,41 +14,35 @@ pi::kernels::SeparableKernel::SeparableKernel(const Array1d &mRow, const Array1d
     this->mCol = mCol;
 }
 
-void pi::kernels::SeparableKernel::apply(cv::Mat &bordered) {
-    assert(bordered.type() == CV_32FC1);
+void pi::kernels::SeparableKernel::apply(cv::Mat &src, const borders::Function &fBorder) {
+    assert(src.type() == CV_32FC1);
 
     auto cPosX = this->width / 2,
             cPosY = this->height / 2;
 
-    auto bRows = bordered.rows;
-    auto rowPts = std::make_unique<float *[]>(bRows);
-
-    //collect ptrs to the rows of bordered image
-    for (auto rI = 0; rI < bRows; rI++) {
-        rowPts[rI] = bordered.ptr<float>(rI);
-    }
+    cv::Mat tmp(src.rows, src.cols, src.type());
 
     //apply mRow
-    for (auto rI = cPosY, rEnd = bordered.rows - cPosY; rI < rEnd; rI++) {
-        for (auto cI = cPosX, cEnd = bordered.cols - cPosX; cI < cEnd; cI++) {
+    for (auto rI = 0, rEnd = src.rows; rI < rEnd; rI++) {
+        for (auto cI = 0, cEnd = src.cols; cI < cEnd; cI++) {
             auto val = 0.f;
-            for(auto kC = 0; kC < this->width; kC++) {
-                val += this->mRow[kC] * rowPts[rI][cI + kC - cPosX];
+
+            for (auto kC = 0; kC < this->width; kC++) {
+                val += this->mRow[kC] * fBorder(rI, cI + kC - cPosX, src);
             }
-            rowPts[rI][cI] = val;
+            tmp.at<float>(rI, cI) = val;
         }
     }
 
     //apply mCol
-    for (auto rI = cPosY, rEnd = bordered.rows - cPosY; rI < rEnd; rI++) {
-        for (auto cI = cPosX, cEnd = bordered.cols - cPosX; cI < cEnd; cI++) {
+    for (auto rI = 0, rEnd = src.rows; rI < rEnd; rI++) {
+        for (auto cI = 0, cEnd = src.cols; cI < cEnd; cI++) {
             auto val = 0.f;
-            for(auto kR = 0; kR < this->height; kR++) {
-                val += this->mCol[kR] * rowPts[rI + kR - cPosY][cI];
+
+            for (auto kR = 0; kR < this->height; kR++) {
+                val += this->mCol[kR] * fBorder(rI + kR - cPosY, cI, tmp);
             }
-            rowPts[rI][cI] = val;
+            src.at<float>(rI, cI) = val;
         }
     }
 }
-
-
