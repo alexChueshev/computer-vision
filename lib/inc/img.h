@@ -1,13 +1,14 @@
 #ifndef COMPUTER_VISION_IMG_H
 #define COMPUTER_VISION_IMG_H
 
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
-
 #include <memory>
+#include <cassert>
 
-class Img
+namespace pi {
+    class Img;
+}
+
+class pi::Img
 {
 
 protected:
@@ -24,8 +25,6 @@ private:
 
 public:
     Img(int height, int width, int channels);
-
-    Img(const std::string &path);
 
     Img(const Img& img);
 
@@ -49,9 +48,11 @@ public:
 
     int channels() const;
 
+    int step() const;
+
     Img clone();
 
-    ~Img() = default;
+    virtual ~Img() = default;
 };
 
 #endif // COMPUTER_VISION_IMG_H

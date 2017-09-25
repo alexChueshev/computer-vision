@@ -1,5 +1,7 @@
 #include "img.h"
 
+using namespace pi;
+
 Img::Img()
     : _width(0)
     , _height(0)
@@ -74,14 +76,14 @@ float* Img::data() {
 }
 
 float* Img::ptr(int row) {
-    assert(0 <= row && row < this->height());
+    assert(0 <= row && row < _height);
 
     return this->_data.get() + this->_step * row;
 }
 
 float* Img::at(int row, int col) {
-    assert(0 <= row && row < this->height());
-    assert(0 <= col && row < this->height());
+    assert(0 <= row && row < _height);
+    assert(0 <= col && col < _width);
 
     return _data.get() + _step * row + _channels * col;
 }
@@ -102,17 +104,21 @@ int Img::channels() const {
     return this->_channels;
 }
 
+int Img::step() const {
+    return this->_step;
+}
+
 Img Img::clone() {
-    Img img(_height, _width, _channels);
+    Img img1(_height, _width, _channels);
 
     auto* src = _data.get();
-    auto* dst = img.data();
+    auto* dst = img1.data();
 
     for(auto i = 0, size = _height * _step; i < size; i++) {
         dst[i] = src[i];
     }
 
-    return img;
+    //return img1;
 }
 
 std::shared_ptr<float> Img::makeSharedArray(int size) {

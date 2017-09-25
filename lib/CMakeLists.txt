@@ -12,7 +12,8 @@ add_library(lib
         src/kernels.cpp inc/kernels.h
         src/filters.cpp inc/filters.h
         src/borders.cpp inc/borders.h
-        src/img.cpp inc/img.h)
+        src/img.cpp inc/img.h
+        src/imageprocessing.cpp inc/imageprocessing.h)
 
 target_link_libraries(lib Qt5::Core)
 target_link_libraries(lib ${OpenCV_LIBS})
