@@ -72,23 +72,23 @@ Img& Img::operator=(Img&& img) {
 }
 
 const float* Img::data() const {
-    return this->_data.get();
+    return _data.get();
 }
 
 float* Img::data() {
-    return this->_data.get();
+    return _data.get();
 }
 
 const float *Img::ptr(int row) const {
     assert(0 <= row && row < _height);
 
-    return this->_data.get() + this->_step * row;
+    return _data.get() + _step * row;
 }
 
 float* Img::ptr(int row) {
     assert(0 <= row && row < _height);
 
-    return this->_data.get() + this->_step * row;
+    return _data.get() + _step * row;
 }
 
 const float *Img::at(int row, int col) const {
@@ -110,27 +110,27 @@ bool Img::isContinuous() {
 }
 
 int Img::width() const {
-    return this->_width;
+    return _width;
 }
 
 int Img::height() const {
-    return this->_height;
+    return _height;
 }
 
 int Img::channels() const {
-    return this->_channels;
+    return _channels;
 }
 
 int Img::step() const {
-    return this->_step;
+    return _step;
 }
 
 int Img::imageSize() const {
-    return this->_height * this->_width;
+    return _height * _width;
 }
 
 int Img::dataSize() const {
-    return this->_height * this->_step;
+    return _height * _step;
 }
 
 Img Img::clone() {

@@ -26,7 +26,7 @@ filters::Gaussian::Gaussian(float sigma)
     this->kernel = std::make_unique<kernels::SeparableKernel>(coefficients,coefficients);
 }
 
-void filters::Gaussian::apply(Img &src, borders::BorderTypes border) {
+void filters::Gaussian::apply(Img& src, borders::BorderTypes border) {
     assert(src.channels() == 1);
 
     this->kernel->apply(src, borders::Factory::get(border));
@@ -37,7 +37,7 @@ filters::Sobel::Sobel()
       kernelY(new kernels::SeparableKernel({1, 2, 1}, {1, 0, -1})) {
 }
 
-void filters::Sobel::apply(Img &src, borders::BorderTypes border) {
+void filters::Sobel::apply(Img& src, borders::BorderTypes border) {
     assert(src.channels() == 1);
 
     auto fBorder = borders::Factory::get(border);

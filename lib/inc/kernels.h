@@ -23,7 +23,7 @@ protected:
 public:
     Kernel(int width, int height);
 
-    virtual void apply(Img &src, const borders::Function &fBorder) = 0;
+    virtual void apply(Img& src, const borders::Function& fBorder) = 0;
 };
 
 
@@ -34,11 +34,11 @@ private:
     Array1d mCol;
 
 public:
-    SeparableKernel(const Array1d &mRow, const Array1d &mCol);
+    SeparableKernel(const Array1d& mRow, const Array1d& mCol);
 
-    SeparableKernel(Array1d &&mRow, Array1d &&mCol);
+    SeparableKernel(Array1d&& mRow, Array1d&& mCol);
 
-    void apply(Img &src, const borders::Function &fBorder) override;
+    void apply(Img& src, const borders::Function& fBorder) override;
 };
 
 #endif //COMPUTER_VISION_KERNEL_H

@@ -16,7 +16,7 @@ borders::Function borders::Factory::get(borders::BorderTypes border) {
     }
 }
 
-float borders::constant(int row, int col, const Img &src) {
+float borders::constant(int row, int col, const Img& src) {
     assert(src.channels() == 1);
 
     auto height = src.height(), width = src.width();
@@ -27,7 +27,7 @@ float borders::constant(int row, int col, const Img &src) {
     return 0;
 }
 
-float borders::replicate(int row, int col, const Img &src) {
+float borders::replicate(int row, int col, const Img& src) {
     assert(src.channels() == 1);
 
     std::function<int(int, int)> range = [](int dimension, int pos){
@@ -42,7 +42,7 @@ float borders::replicate(int row, int col, const Img &src) {
     return *src.at(nRow,nCol);
 }
 
-float borders::reflect(int row, int col, const Img &src) {
+float borders::reflect(int row, int col, const Img& src) {
     assert(src.channels() == 1);
 
     std::function<int(int, int)> range = [](int dimension, int pos){
@@ -57,7 +57,7 @@ float borders::reflect(int row, int col, const Img &src) {
     return *src.at(nRow,nCol);
 }
 
-float borders::wrap(int row, int col, const Img &src) {
+float borders::wrap(int row, int col, const Img& src) {
     assert(src.channels() == 1);
 
     auto height = src.height(), width = src.width();

@@ -10,19 +10,19 @@ kernels::Kernel::Kernel(int width, int height) {
     this->height = height;
 }
 
-kernels::SeparableKernel::SeparableKernel(const Array1d &mRow, const Array1d &mCol)
+kernels::SeparableKernel::SeparableKernel(const Array1d& mRow, const Array1d& mCol)
         : Kernel(mRow.size(), mCol.size()) {
     this->mRow = mRow;
     this->mCol = mCol;
 }
 
-kernels::SeparableKernel::SeparableKernel(Array1d &&mRow, Array1d &&mCol)
+kernels::SeparableKernel::SeparableKernel(Array1d&& mRow, Array1d&& mCol)
         : Kernel(mRow.size(), mCol.size()) {
     this->mRow = std::move(mRow);
     this->mCol = std::move(mCol);
 }
 
-void kernels::SeparableKernel::apply(Img &src, const borders::Function &fBorder) {
+void kernels::SeparableKernel::apply(Img& src, const borders::Function& fBorder) {
     assert(src.channels() == 1);
 
     auto cPosX = this->width / 2,

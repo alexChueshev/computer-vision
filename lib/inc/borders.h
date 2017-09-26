@@ -16,13 +16,13 @@ namespace borders {
 
     typedef std::function<float(int, int, const Img&)> Function;
 
-    float constant(int row, int col, const Img &src);
+    float constant(int row, int col, const Img& src);
 
-    float replicate(int row, int col, const Img &src);
+    float replicate(int row, int col, const Img& src);
 
-    float reflect(int row, int col, const Img &src);
+    float reflect(int row, int col, const Img& src);
 
-    float wrap(int row, int col, const Img &src);
+    float wrap(int row, int col, const Img& src);
 }}
 
 class pi::borders::Factory {

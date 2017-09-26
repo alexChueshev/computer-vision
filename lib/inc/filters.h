@@ -28,7 +28,7 @@ protected:
 public:
     explicit Gaussian(float sigma);
 
-    void apply(Img &src, borders::BorderTypes border) override;
+    void apply(Img& src, borders::BorderTypes border) override;
 };
 
 class pi::filters::Sobel : public Filter {
@@ -40,7 +40,7 @@ protected:
 public:
     explicit Sobel();
 
-    void apply(Img &src, borders::BorderTypes border) override;
+    void apply(Img& src, borders::BorderTypes border) override;
 };
 
 #endif //COMPUTER_VISION_FILTERS_H
