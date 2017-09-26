@@ -34,6 +34,8 @@ public:
 
     Img& operator=(Img&& img);
 
+    const float* data() const;
+
     float* data();
 
     float* ptr(int row);
@@ -49,6 +51,10 @@ public:
     int channels() const;
 
     int step() const;
+
+    int imageSize() const;
+
+    int dataSize() const;
 
     Img clone();
 

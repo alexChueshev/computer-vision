@@ -29,7 +29,7 @@ Img::Img(const Img& img)
 {
 }
 
-Img::Img(Img &&img)
+Img::Img(Img&& img)
     : Img()
 {
     std::swap(_width, img._width);
@@ -40,7 +40,7 @@ Img::Img(Img &&img)
     _data.swap(img._data);
 }
 
-Img& Img::operator=(const Img &img) {
+Img& Img::operator=(const Img& img) {
     if(this != &img) {
         _width = img._width;
         _height = img._height;
@@ -51,7 +51,7 @@ Img& Img::operator=(const Img &img) {
     return *this;
 }
 
-Img& Img::operator=(Img &&img) {
+Img& Img::operator=(Img&& img) {
     if(this != &img) {
         _width = 0;
         std::swap(_width, img._width);
@@ -69,6 +69,10 @@ Img& Img::operator=(Img &&img) {
         img._data.swap(_data);
     }
     return *this;
+}
+
+const float* Img::data() const {
+    return this->_data.get();
 }
 
 float* Img::data() {
@@ -108,17 +112,25 @@ int Img::step() const {
     return this->_step;
 }
 
+int Img::imageSize() const {
+    return this->_height * this->_width;
+}
+
+int Img::dataSize() const {
+    return this->_height * this->_step;
+}
+
 Img Img::clone() {
-    Img img1(_height, _width, _channels);
+    Img img(_height, _width, _channels);
 
     auto* src = _data.get();
-    auto* dst = img1.data();
+    auto* dst = img.data();
 
     for(auto i = 0, size = _height * _step; i < size; i++) {
         dst[i] = src[i];
     }
 
-    //return img1;
+    return img;
 }
 
 std::shared_ptr<float> Img::makeSharedArray(int size) {

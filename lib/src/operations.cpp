@@ -1,28 +1,39 @@
 #include "operations.h"
 
-void pi::opts::grayscale(cv::Mat &src) {
-    assert(src.type() == CV_8UC3);
+using namespace pi;
 
-    cv::Mat grayscale(src.rows, src.cols, CV_32FC1);
+void opts::grayscale(Img& src) {
+    assert(src.channels() == 3);
 
-    auto srcIt = src.begin<cv::Vec3b>();
+    Img graycale(src.height(), src.width(), 1);
 
-    for (auto gIt = grayscale.begin<float>(),
-                 gEnd = grayscale.end<float>(); gIt != gEnd; ++srcIt, ++gIt) {
-        *gIt = (.299 * (*srcIt)[2] + .587 * (*srcIt)[1] + .114 * (*srcIt)[0]) / 255;
+    auto* dstData = graycale.data();
+    auto* srcData = src.data();
+    auto channels = src.channels();
+
+    for(auto i = 0, size = src.imageSize(); i < size; i++) {
+        dstData[i] = (.299f * srcData[channels * i + 2] +
+                      .587f * srcData[channels * i + 1] +
+                      .114f * srcData[channels * i]) / 255;
     }
 
-    src = std::move(grayscale);
+    src = std::move(graycale);
 }
 
-void pi::opts::normalize(cv::Mat &src) {
-    assert(src.type() == CV_32FC1);
+void opts::normalize(Img& src) {
+    assert(src.channels() == 1);
+    assert(src.height() > 0 && src.width() > 0);
 
-    auto min = .0, max = .0;
+    //find max, min values
+    auto* data = src.data();
+    auto min = data[0], max = data[0];
+    for(auto i = 1, size = src.dataSize(); i < size; i++) {
+        if(data[i] > max) max = data[i];
+        if(data[i] < min) min = data[i];
+    }
 
-    cv::minMaxLoc(src, &min, &max);
-    for (auto it = src.begin<uchar>(),
-                 end = src.end<uchar>(); it != end; ++it) {
-        *it = (*it - min) / (max - min);
+    //normalize
+    for(auto i = 0, size = src.dataSize(); i < size; i++) {
+        data[i] = (data[i] - min) / (max - min);
     }
 }

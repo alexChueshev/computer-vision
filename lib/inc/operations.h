@@ -1,12 +1,14 @@
 #ifndef COMPUTER_VISION_OPERATIONS_H
 #define COMPUTER_VISION_OPERATIONS_H
 
-#include <image.h>
+#include <img.h>
 
-namespace pi::opts {
-    void grayscale(cv::Mat &src);
+namespace pi {
+namespace opts {
+    void grayscale(Img& src);
 
-    void normalize(cv::Mat &src);
+    void normalize(Img& src);
+}
 }
 
 #endif //COMPUTER_VISION_OPERATIONS_H
