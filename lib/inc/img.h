@@ -38,7 +38,11 @@ public:
 
     float* data();
 
+    const float* ptr(int row) const;
+
     float* ptr(int row);
+
+    const float* at(int row, int col) const;
 
     float* at(int row, int col);
 

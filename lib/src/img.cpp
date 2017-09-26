@@ -79,10 +79,23 @@ float* Img::data() {
     return this->_data.get();
 }
 
+const float *Img::ptr(int row) const {
+    assert(0 <= row && row < _height);
+
+    return this->_data.get() + this->_step * row;
+}
+
 float* Img::ptr(int row) {
     assert(0 <= row && row < _height);
 
     return this->_data.get() + this->_step * row;
+}
+
+const float *Img::at(int row, int col) const {
+    assert(0 <= row && row < _height);
+    assert(0 <= col && col < _width);
+
+    return _data.get() + _step * row + _channels * col;
 }
 
 float* Img::at(int row, int col) {

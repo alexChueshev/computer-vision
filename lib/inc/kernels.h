@@ -1,18 +1,15 @@
 #ifndef COMPUTER_VISION_KERNEL_H
 #define COMPUTER_VISION_KERNEL_H
 
-#include <opencv2/core.hpp>
-
 #include <borders.h>
-
-#include <memory>
 #include <vector>
 
-namespace pi::kernels {
+namespace pi {
+namespace kernels {
     class Kernel;
 
     class SeparableKernel;
-}
+}}
 
 class pi::kernels::Kernel {
 
@@ -26,7 +23,7 @@ protected:
 public:
     Kernel(int width, int height);
 
-    virtual void apply(cv::Mat &src, const borders::Function &fBorder) = 0;
+    virtual void apply(Img &src, const borders::Function &fBorder) = 0;
 };
 
 
@@ -41,7 +38,7 @@ public:
 
     SeparableKernel(Array1d &&mRow, Array1d &&mCol);
 
-    void apply(cv::Mat &src, const borders::Function &fBorder) override;
+    void apply(Img &src, const borders::Function &fBorder) override;
 };
 
 #endif //COMPUTER_VISION_KERNEL_H

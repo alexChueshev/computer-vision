@@ -32,18 +32,10 @@ ImageProcessing& ImageProcessing::opts(std::initializer_list<OperationFunction> 
 }
 
 ImageProcessing& ImageProcessing::filters(std::initializer_list<
-                                          std::pair<borders::BorderTypes,
-                                          FilterFunction>> filters) {
+                                          std::pair<borders::BorderTypes, FilterFunction>> filters) {
     for(const auto &filter: filters) {
-        filter.second(filter.first, _img);
+        filter.second(_img, filter.first);
     }
-
-    return *this;
-}
-
-ImageProcessing& ImageProcessing::save(const std::string& path,
-                                       const SaveFunction& saveFunction) {
-    saveFunction(path, _img);
 
     return *this;
 }

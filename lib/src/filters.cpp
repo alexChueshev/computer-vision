@@ -1,6 +1,8 @@
 #include "filters.h"
 
-pi::filters::Gaussian::Gaussian(float sigma)
+using namespace pi;
+
+filters::Gaussian::Gaussian(float sigma)
         : sigma(sigma) {
     assert(sigma > 0);
 
@@ -21,38 +23,36 @@ pi::filters::Gaussian::Gaussian(float sigma)
         coefficient /= sum;
     }
 
-    this->kernel = std::make_unique<pi::kernels::SeparableKernel>(
-            coefficients,
-            coefficients
-    );
+    this->kernel = std::make_unique<kernels::SeparableKernel>(coefficients,coefficients);
 }
 
-void pi::filters::Gaussian::apply(cv::Mat &src, pi::borders::BorderTypes border) {
-    assert(src.type() == CV_32FC1);
+void filters::Gaussian::apply(Img &src, borders::BorderTypes border) {
+    assert(src.channels() == 1);
 
-    this->kernel->apply(src, pi::borders::Factory::get(border));
+    this->kernel->apply(src, borders::Factory::get(border));
 }
 
-pi::filters::Sobel::Sobel()
-        : kernelX(new pi::kernels::SeparableKernel({1, 0, -1}, {1, 2, 1})),
-          kernelY(new pi::kernels::SeparableKernel({1, 2, 1}, {1, 0, -1})) {
+filters::Sobel::Sobel()
+    : kernelX(new kernels::SeparableKernel({1, 0, -1}, {1, 2, 1})),
+      kernelY(new kernels::SeparableKernel({1, 2, 1}, {1, 0, -1})) {
 }
 
-void pi::filters::Sobel::apply(cv::Mat &src, pi::borders::BorderTypes border) {
-    assert(src.type() == CV_32FC1);
+void filters::Sobel::apply(Img &src, borders::BorderTypes border) {
+    assert(src.channels() == 1);
 
-    auto fBorder = pi::borders::Factory::get(border);
+    auto fBorder = borders::Factory::get(border);
 
-    cv::Mat xSrc = src.clone();
-    cv::Mat ySrc = src.clone();
+    Img xSrc = src.clone();
+    Img ySrc = src.clone();
 
     this->kernelX->apply(xSrc, fBorder);
     this->kernelY->apply(ySrc, fBorder);
 
-    for (auto it = src.begin<float>(), end = src.end<float>(),
-                 xSrcIt = xSrc.begin<float>(), ySrcIt = ySrc.begin<float>();
-         it != end; ++it, ++xSrcIt, ++ySrcIt) {
+    auto* data = src.data();
+    auto* xData = xSrc.data();
+    auto* yData = ySrc.data();
 
-        *it = std::sqrt((*xSrcIt) * (*xSrcIt) + (*ySrcIt) * (*ySrcIt));
+    for(auto i = 0, size = src.dataSize(); i < size; i++) {
+        data[i] = std::sqrt(xData[i] * xData[i] + yData[i] * yData[i]);
     }
 }
