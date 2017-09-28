@@ -1,5 +1,5 @@
-#ifndef COMPUTER_VISION_BORDERS_UTILS_H
-#define COMPUTER_VISION_BORDERS_UTILS_H
+#ifndef COMPUTER_VISION_UTILS_H
+#define COMPUTER_VISION_UTILS_H
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -13,4 +13,4 @@ namespace utils {
     void render(const std::string& window, const pi::Img& img);
 }
 
-#endif // COMPUTER_VISION_BORDERS_UTILS_H
+#endif // COMPUTER_VISION_UTILS_H
