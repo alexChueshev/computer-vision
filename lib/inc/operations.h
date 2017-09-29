@@ -8,6 +8,8 @@ namespace opts {
     void grayscale(Img& src);
 
     void normalize(Img& src);
+
+    void scale(Img& src);
 }
 }
 

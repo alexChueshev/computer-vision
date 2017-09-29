@@ -37,3 +37,20 @@ void opts::normalize(Img& src) {
         data[i] = (data[i] - min) / (max - min);
     }
 }
+
+void opts::scale(Img &src) {
+    assert(src.channels() == 1);
+
+    Img scaled(src.height() / 2, src.width() / 2, src.channels());
+
+    for(auto i = 0, height = scaled.height(); i < height; i++) {
+        for(auto j = 0, width = scaled.width(); j < width; j++) {
+            *scaled.at(i, j) = (*src.at(i * 2, j * 2)
+                             + *src.at(i * 2, j * 2 + 1)
+                             + *src.at(i * 2 + 1, j * 2)
+                             + *src.at(i * 2 + 1, j * 2 +1)) / 4.f;
+        }
+    }
+
+    src = std::move(scaled);
+}
