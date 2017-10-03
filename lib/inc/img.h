@@ -19,11 +19,11 @@ protected:
     std::shared_ptr<float> _data;
 
 private:
-    Img();
-
     std::shared_ptr<float> makeSharedArray(int size);
 
 public:
+    Img();
+
     Img(int height, int width, int channels);
 
     Img(const Img& img);

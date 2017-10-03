@@ -47,6 +47,18 @@ ImageProcessing& ImageProcessing::render(const std::string& windowName,
     return *this;
 }
 
+ImageProcessing& ImageProcessing::apply(const Img& img) {
+    _img = img;
+
+    return *this;
+}
+
+ImageProcessing& ImageProcessing::apply(Img&& img) {
+    _img = std::move(img);
+
+    return *this;
+}
+
 ImageProcessing ImageProcessing::clone() {
     ImageProcessing imageProcessing(_img.clone());
 
