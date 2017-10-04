@@ -46,7 +46,7 @@ public:
 
     float* at(int row, int col);
 
-    bool isContinuous();
+    bool isContinuous() const;
 
     int width() const;
 
@@ -60,7 +60,7 @@ public:
 
     int dataSize() const;
 
-    Img clone();
+    Img clone() const;
 
     virtual ~Img() = default;
 };

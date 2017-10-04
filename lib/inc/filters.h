@@ -17,6 +17,8 @@ class pi::filters::Filter {
 
 public:
     virtual void apply(Img &src, borders::BorderTypes border) = 0;
+
+    virtual ~Filter() = default;
 };
 
 class pi::filters::Gaussian : public Filter {

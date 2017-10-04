@@ -105,7 +105,7 @@ float* Img::at(int row, int col) {
     return _data.get() + _step * row + _channels * col;
 }
 
-bool Img::isContinuous() {
+bool Img::isContinuous() const {
     return true;
 }
 
@@ -133,7 +133,7 @@ int Img::dataSize() const {
     return _height * _step;
 }
 
-Img Img::clone() {
+Img Img::clone() const {
     Img img(_height, _width, _channels);
 
     auto* src = _data.get();

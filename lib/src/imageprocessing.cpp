@@ -59,7 +59,7 @@ ImageProcessing& ImageProcessing::apply(Img&& img) {
     return *this;
 }
 
-ImageProcessing ImageProcessing::clone() {
+ImageProcessing ImageProcessing::clone() const {
     ImageProcessing imageProcessing(_img.clone());
 
     return imageProcessing;

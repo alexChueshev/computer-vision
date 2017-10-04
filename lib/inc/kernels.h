@@ -24,6 +24,8 @@ public:
     Kernel(int width, int height);
 
     virtual void apply(Img& src, const borders::Function& fBorder) = 0;
+
+    virtual ~Kernel() = default;
 };
 
 

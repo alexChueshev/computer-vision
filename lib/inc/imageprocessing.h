@@ -42,7 +42,7 @@ public:
 
     ImageProcessing& apply(Img&& img);
 
-    ImageProcessing clone();
+    ImageProcessing clone() const;
 
     Img image() const;
 };
