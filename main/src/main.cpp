@@ -1,5 +1,4 @@
 #include <imageprocessing.h>
-#include <operations.h>
 #include <pyramid.h>
 
 #include <utils.h>
