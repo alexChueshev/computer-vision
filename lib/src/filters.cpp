@@ -6,11 +6,11 @@ filters::Gaussian::Gaussian(float sigma)
         : sigma(sigma) {
     assert(sigma > 0);
 
-    auto sum = 0.;
+    auto sum = 0.f;
     auto hSize = (int) (sigma * 3);
-    auto div = sqrt(2 * M_PI) * sigma;
+    auto div = std::sqrt(2 * M_PI) * sigma;
 
-    std::vector<double> coefficients(2 * hSize + 1);
+    std::vector<float> coefficients(2 * hSize + 1);
 
     for (auto i = -hSize; i <= hSize; i++) {
         auto val = std::exp(-i * i / (2 * sigma * sigma)) / div;

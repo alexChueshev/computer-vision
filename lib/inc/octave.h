@@ -1,7 +1,6 @@
 #ifndef COMPUTER_VISION_OCTAVE_H
 #define COMPUTER_VISION_OCTAVE_H
 
-#include <img.h>
 #include <filters.h>
 #include <operations.h>
 
@@ -34,18 +33,18 @@ protected:
     SigmaDeltaFunction _sigmaDelta;
 
 public:
-    Octave(const Layer &layer, size_t numLayers, const SigmaDeltaFunction &sigmaDelta);
+    Octave(const Layer& layer, size_t numLayers, const SigmaDeltaFunction& sigmaDelta);
 
-    Octave(Layer &&layer, size_t numLayers, const SigmaDeltaFunction &sigmaDelta);
+    Octave(Layer&& layer, size_t numLayers, const SigmaDeltaFunction& sigmaDelta);
 
-    Octave(const Img &img, size_t numLayers, float sigmaPrev, float sigmaNext,
-           const SigmaDeltaFunction &sigmaDelta);
+    Octave(const Img& img, size_t numLayers, float sigmaPrev, float sigmaNext,
+           const SigmaDeltaFunction& sigmaDelta);
 
     Octave nextOctave() const;
 
     Octave& createLayers();
 
-    const Octave& whileLoop(const LoopFunction &loopFuction) const;
+    const Octave& whileLoop(const LoopFunction& loopFuction) const;
 
     const std::vector<Layer>& layers() const;
 

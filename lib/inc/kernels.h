@@ -14,7 +14,7 @@ namespace kernels {
 class pi::kernels::Kernel {
 
 public:
-    typedef std::vector<double> Array1d;
+    typedef std::vector<float> Array1d;
 
 protected:
     int width;

@@ -2,8 +2,8 @@
 
 using namespace pi;
 
-pyramids::Octave::Octave(const Layer &layer, size_t numLayers,
-                         const SigmaDeltaFunction &sigmaDelta)
+pyramids::Octave::Octave(const Layer& layer, size_t numLayers,
+                         const SigmaDeltaFunction& sigmaDelta)
     : _step(step(numLayers))
     , _numLayers(numLayers)
     , _sigmaDelta(sigmaDelta)
@@ -12,8 +12,8 @@ pyramids::Octave::Octave(const Layer &layer, size_t numLayers,
     _layers.push_back({layer.img.clone(), layer.sigma, layer.sigmaEffective});
 }
 
-pyramids::Octave::Octave(Layer &&layer, size_t numLayers,
-                         const SigmaDeltaFunction &sigmaDelta)
+pyramids::Octave::Octave(Layer&& layer, size_t numLayers,
+                         const SigmaDeltaFunction& sigmaDelta)
     : _step(step(numLayers))
     , _numLayers(numLayers)
     , _sigmaDelta(sigmaDelta)
@@ -22,9 +22,9 @@ pyramids::Octave::Octave(Layer &&layer, size_t numLayers,
     _layers.push_back(std::move(layer));
 }
 
-pyramids::Octave::Octave(const Img &img, size_t numLayers,
+pyramids::Octave::Octave(const Img& img, size_t numLayers,
                          float sigmaPrev, float sigmaNext,
-                         const SigmaDeltaFunction &sigmaDelta)
+                         const SigmaDeltaFunction& sigmaDelta)
     : _step(step(numLayers))
     , _numLayers(numLayers)
     , _sigmaDelta(sigmaDelta)
@@ -67,7 +67,7 @@ pyramids::Octave& pyramids::Octave::createLayers() {
     return *this;
 }
 
-const pyramids::Octave& pyramids::Octave::whileLoop(const LoopFunction &loopFuction) const {
+const pyramids::Octave& pyramids::Octave::whileLoop(const LoopFunction& loopFuction) const {
     for(const auto &layer : _layers) {
         loopFuction(layer);
     }

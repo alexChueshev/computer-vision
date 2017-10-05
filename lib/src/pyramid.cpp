@@ -2,7 +2,7 @@
 
 using namespace pi;
 
-pyramids::GaussianPyramid& pyramids::GaussianPyramid::apply(const Img &img, size_t numLayers) {
+pyramids::GaussianPyramid& pyramids::GaussianPyramid::apply(const Img& img, size_t numLayers) {
     _numOctaves = this->numOctavesCalculations(std::min(img.width(), img.height()));
     _octaves.reserve(_numOctaves);
 
@@ -20,7 +20,8 @@ pyramids::GaussianPyramid& pyramids::GaussianPyramid::apply(const Img &img, size
     return *this;
 }
 
-pyramids::GaussianPyramid& pyramids::GaussianPyramid::whileLoop(const LoopOctaveFunction &loopFunction) {
+const pyramids::GaussianPyramid& pyramids::GaussianPyramid::whileLoop(
+        const LoopOctaveFunction& loopFunction) const {
     for(const auto &octave : _octaves) {
         loopFunction(octave);
     }
@@ -28,7 +29,8 @@ pyramids::GaussianPyramid& pyramids::GaussianPyramid::whileLoop(const LoopOctave
     return *this;
 }
 
-pyramids::GaussianPyramid& pyramids::GaussianPyramid::whileLoop(const LoopLayerFunction &loopFunction) {
+const pyramids::GaussianPyramid& pyramids::GaussianPyramid::whileLoop(
+        const LoopLayerFunction& loopFunction) const {
     for(const auto &octave : _octaves) {
         for(const auto &layer : octave.layers()) {
             loopFunction(layer);

@@ -3,8 +3,6 @@
 
 #include <octave.h>
 
-#include <cmath>
-
 namespace pi {
 namespace pyramids {
     class Pyramid;
@@ -20,11 +18,11 @@ public:
     typedef std::function<void(const Layer&)> LoopLayerFunction;
 
 public:
-    virtual Pyramid& apply(const Img &img, size_t numLayers) = 0;
+    virtual Pyramid& apply(const Img& img, size_t numLayers) = 0;
 
-    virtual Pyramid& whileLoop(const LoopOctaveFunction &loopFunction) = 0;
+    virtual const Pyramid& whileLoop(const LoopOctaveFunction& loopFunction) const = 0;
 
-    virtual Pyramid& whileLoop(const LoopLayerFunction &loopFunction) = 0;
+    virtual const Pyramid& whileLoop(const LoopLayerFunction& loopFunction) const = 0;
 
     virtual ~Pyramid() = default;
 };
@@ -41,11 +39,11 @@ protected:
     std::vector<Octave> _octaves;
 
 public:
-    GaussianPyramid& apply(const Img &img, size_t numLayers) override;
+    GaussianPyramid& apply(const Img& img, size_t numLayers) override;
 
-    GaussianPyramid& whileLoop(const LoopOctaveFunction &loopFunction) override;
+    const GaussianPyramid& whileLoop(const LoopOctaveFunction& loopFunction) const override;
 
-    GaussianPyramid& whileLoop(const LoopLayerFunction &loopFunction) override;
+    const GaussianPyramid& whileLoop(const LoopLayerFunction& loopFunction) const override;
 
     const std::vector<Octave>& octaves() const;
 
