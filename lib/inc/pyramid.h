@@ -3,6 +3,8 @@
 
 #include <octave.h>
 
+#include <cmath>
+
 namespace pi {
 namespace pyramids {
     class Pyramid;
@@ -18,7 +20,7 @@ public:
     typedef std::function<void(const Layer&)> LoopLayerFunction;
 
 public:
-    virtual Pyramid& apply(const Img &img) = 0;
+    virtual Pyramid& apply(const Img &img, size_t numLayers) = 0;
 
     virtual Pyramid& whileLoop(const LoopOctaveFunction &loopFunction) = 0;
 
@@ -29,17 +31,26 @@ public:
 
 class pi::pyramids::GaussianPyramid : public Pyramid {
 
+public:
+    constexpr static int MIN_OCTAVE_IMG_SIZE = 16;
+    constexpr static float SIGMA_ZERO = 1.6f;
+    constexpr static float SIGMA_START = .5f;
+
 protected:
+    size_t _numOctaves;
     std::vector<Octave> _octaves;
 
 public:
-    GaussianPyramid& apply(const Img &img) override;
+    GaussianPyramid& apply(const Img &img, size_t numLayers) override;
 
     GaussianPyramid& whileLoop(const LoopOctaveFunction &loopFunction) override;
 
     GaussianPyramid& whileLoop(const LoopLayerFunction &loopFunction) override;
 
     const std::vector<Octave>& octaves() const;
+
+protected:
+    size_t numOctavesCalculations(int minImgMeasurement);
 };
 
 #endif // COMPUTER_VISION_PYRAMID_H
