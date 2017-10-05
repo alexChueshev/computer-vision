@@ -21,9 +21,26 @@ pi::Img utils::load(const std::string &path) {
     return img;
 }
 
-void utils::render(const std::__cxx11::string &window, const pi::Img &img) {
+void utils::render(const std::string &window, const pi::Img &img) {
+    assert(img.channels() == 1);
+
     cv::namedWindow(window, CV_WINDOW_AUTOSIZE);
     cv::imshow(window, cv::Mat(img.height(), img.width(),
                                CV_32FC1, const_cast<float*>(img.data())));
     cv::waitKey(0);
+}
+
+void utils::save(const std::string &path, const pi::Img &img) {
+    assert(img.channels() == 1);
+
+    pi::Img dst(img.height(), img.width(), img.channels());
+
+    auto* dataSrc = img.data();
+    auto* dataDst = dst.data();
+
+    for(auto i = 0, size = img.dataSize(); i < size; i++) {
+        dataDst[i] = 255 * dataSrc[i];
+    }
+
+    cv::imwrite(path, cv::Mat(dst.height(), dst.width(), CV_32FC1, dataDst));
 }

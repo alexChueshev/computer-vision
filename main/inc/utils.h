@@ -11,6 +11,8 @@ namespace utils {
     pi::Img load(const std::string& path);
 
     void render(const std::string& window, const pi::Img& img);
+
+    void save(const std::string& path, const pi::Img& img);
 }
 
 #endif // COMPUTER_VISION_UTILS_H

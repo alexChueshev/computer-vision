@@ -46,6 +46,7 @@ pi::pyramids::Octave pyramids::Octave::nextOctave() const {
     auto sigmaEffective = _step * lastOctaveLayer.sigmaEffective;
 
     opts::scale(layerImg);
+
     return Octave({std::move(layerImg), sigma, sigmaEffective}, _numLayers, _sigmaDelta);
 }
 
@@ -67,6 +68,9 @@ pyramids::Octave& pyramids::Octave::createLayers() {
 }
 
 const pyramids::Octave& pyramids::Octave::whileLoop(const LoopFunction &loopFuction) const {
+    for(const auto &layer : _layers) {
+        loopFuction(layer);
+    }
 
     return *this;
 }

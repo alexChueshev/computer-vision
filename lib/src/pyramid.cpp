@@ -21,11 +21,19 @@ pyramids::GaussianPyramid& pyramids::GaussianPyramid::apply(const Img &img, size
 }
 
 pyramids::GaussianPyramid& pyramids::GaussianPyramid::whileLoop(const LoopOctaveFunction &loopFunction) {
+    for(const auto &octave : _octaves) {
+        loopFunction(octave);
+    }
 
     return *this;
 }
 
 pyramids::GaussianPyramid& pyramids::GaussianPyramid::whileLoop(const LoopLayerFunction &loopFunction) {
+    for(const auto &octave : _octaves) {
+        for(const auto &layer : octave.layers()) {
+            loopFunction(layer);
+        }
+    }
 
     return *this;
 }

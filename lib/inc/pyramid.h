@@ -33,7 +33,7 @@ class pi::pyramids::GaussianPyramid : public Pyramid {
 
 public:
     constexpr static int MIN_OCTAVE_IMG_SIZE = 16;
-    constexpr static float SIGMA_ZERO = 1.6f;
+    constexpr static float SIGMA_ZERO = 1.4f;
     constexpr static float SIGMA_START = .5f;
 
 protected:

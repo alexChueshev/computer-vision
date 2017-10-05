@@ -23,6 +23,12 @@ ImageProcessing& ImageProcessing::load(const std::string& path,
     return *this;
 }
 
+ImageProcessing &ImageProcessing::save(const std::string &path, const SaveFunction &saveFunction) {
+    saveFunction(path, _img);
+
+    return *this;
+}
+
 ImageProcessing& ImageProcessing::opts(std::initializer_list<OperationFunction> opts) {
     for(const auto &opt: opts) {
         opt(_img);

@@ -31,6 +31,8 @@ public:
 
     ImageProcessing& load(const std::string& path, const LoadFunction& loadFuntion);
 
+    ImageProcessing& save(const std::string& path, const SaveFunction& saveFunction);
+
     ImageProcessing& opts(std::initializer_list<OperationFunction> opts);
 
     ImageProcessing& filters(std::initializer_list<
