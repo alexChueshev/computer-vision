@@ -10,4 +10,5 @@ add_library(lib
         src/img.cpp inc/img.h
         src/imageprocessing.cpp inc/imageprocessing.h
         src/pyramid.cpp inc/pyramid.h
-        src/octave.cpp inc/octave.h)
+        src/octave.cpp inc/octave.h
+        src/detectors.cpp inc/detectors.h)
