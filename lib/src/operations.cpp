@@ -38,7 +38,7 @@ void opts::normalize(Img& src) {
     }
 }
 
-void opts::scale(Img &src) {
+void opts::scale(Img& src) {
     assert(src.channels() == 1);
 
     Img scaled(src.height() / 2, src.width() / 2, src.channels());

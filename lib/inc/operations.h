@@ -10,7 +10,6 @@ namespace opts {
     void normalize(Img& src);
 
     void scale(Img& src);
-}
-}
+}}
 
 #endif //COMPUTER_VISION_OPERATIONS_H

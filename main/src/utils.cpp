@@ -22,11 +22,13 @@ pi::Img utils::load(const std::string &path) {
 }
 
 void utils::render(const std::string &window, const pi::Img &img) {
-    assert(img.channels() == 1);
+    assert(img.channels() == 1 || img.channels() == 3);
+
+    auto type = img.channels() == 1 ? CV_32FC1 : CV_32FC3;
 
     cv::namedWindow(window, CV_WINDOW_AUTOSIZE);
     cv::imshow(window, cv::Mat(img.height(), img.width(),
-                               CV_32FC1, const_cast<float*>(img.data())));
+                               type, const_cast<float*>(img.data())));
     cv::waitKey(0);
 }
 
