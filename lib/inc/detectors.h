@@ -32,15 +32,12 @@ struct pi::detectors::Point {
 class pi::detectors::Detector {
 
 protected:
-    Img _img;
     std::vector<Point> _points;
 
 public:
     virtual Detector& apply(const Img& img, borders::BorderTypes border) = 0;
 
-    Detector& addPointsTo();
-
-    Img image() const;
+    Detector& addPointsTo(Img& img);
 
     const std::vector<Point>& points() const;
 

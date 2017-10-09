@@ -5,37 +5,33 @@ using namespace pi;
 /********
  * Detector methods
  ********/
-detectors::Detector& detectors::Detector::addPointsTo() {
-    assert(_img.channels() == 1);
+detectors::Detector& detectors::Detector::addPointsTo(Img& img) {
+    assert(img.channels() == 1);
 
     //convert to 3 ch
-    Img tmp(_img.height(), _img.width(), 3);
+    Img tmp(img.height(), img.width(), 3);
 
     auto* dataTmp = tmp.data();
-    auto* dataImg = _img.data();
+    auto* dataImg = img.data();
     auto channels = tmp.channels();
 
-    for(auto i = 0, size = _img.dataSize(); i < size; i++) {
+    for(auto i = 0, size = img.dataSize(); i < size; i++) {
         dataTmp[i * channels] = dataImg[i];
         dataTmp[i * channels + 1] = dataImg[i];
         dataTmp[i * channels + 2] = dataImg[i];
     }
 
-    _img = std::move(tmp);
+    img = std::move(tmp);
 
     //add points to image
     for(const auto &point : _points) {
-        auto* pixel = _img.at(point.row, point.col);
+        auto* pixel = img.at(point.row, point.col);
         *(pixel + 0) = .0f;
         *(pixel + 1) = .0f;
         *(pixel + 2) = 1.f; //red color
     }
 
     return *this;
-}
-
-Img detectors::Detector::image() const {
-    return _img;
 }
 
 const std::vector<detectors::Point>& detectors::Detector::points() const {
@@ -58,7 +54,6 @@ detectors::DetectorMoravec& detectors::DetectorMoravec::apply(const Img& img,
     Img dst(img.height(), img.width(), img.channels());
 
     _points.clear();
-    _img = img.clone();
 
     this->applyPatch(img, dst, border);
     this->applyThreshold(dst, border);
