@@ -2,39 +2,78 @@
 
 using namespace pi;
 
+/***********************
+ * Gaussian methods
+ ***********************/
 filters::Gaussian::Gaussian(float sigma)
-        : sigma(sigma) {
+        : _sigma(sigma) {
     assert(sigma > 0);
 
+    std::vector<float> coefficients = data1d(_sigma, (2 * (int)(sigma * 3) + 1));
+
+    _kernel = std::make_unique<kernels::SeparableKernel>(coefficients,coefficients);
+}
+
+void filters::Gaussian::apply(Img& src, borders::BorderTypes border) {
+    assert(src.channels() == 1);
+
+    _kernel->apply(src, borders::Factory::get(border));
+}
+
+std::vector<float> filters::Gaussian::data1d(float sigma, int size) {
+    assert(sigma > 0);
+    assert(size % 2 == 1);
+
     auto sum = 0.f;
-    auto hSize = (int) (sigma * 3);
-    auto div = std::sqrt(2 * M_PI) * sigma;
+    auto halfSize = size / 2;
+    float div = std::sqrt(2 * M_PI) * sigma;
+    std::vector<float> coefficients(size);
 
-    std::vector<float> coefficients(2 * hSize + 1);
-
-    for (auto i = -hSize; i <= hSize; i++) {
+    for (auto i = -halfSize; i <= halfSize; i++) {
         auto val = std::exp(-i * i / (2 * sigma * sigma)) / div;
 
         sum += val;
-        coefficients[i + hSize] = val;
+        coefficients[i + halfSize] = val;
     }
 
     for (auto &coefficient : coefficients) {
         coefficient /= sum;
     }
 
-    this->kernel = std::make_unique<kernels::SeparableKernel>(coefficients,coefficients);
+    return coefficients;
 }
 
-void filters::Gaussian::apply(Img& src, borders::BorderTypes border) {
-    assert(src.channels() == 1);
+std::vector<float> filters::Gaussian::data2d(float sigma, int size) {
+    assert(sigma > 0);
+    assert(size % 2 == 1);
 
-    this->kernel->apply(src, borders::Factory::get(border));
+    auto sum = 0.f;
+    auto halfSize = size / 2;
+    float div = 2 * M_PI * sigma * sigma;
+    std::vector<float> coefficients(size * size);
+
+    for (auto i = -halfSize; i <= halfSize; i++) {
+        for(auto j = -halfSize; j <= halfSize; j++) {
+            auto val = std::exp(-(i * i + j * j) / (2 * sigma * sigma)) / div;
+
+            sum += val;
+            coefficients[(i + halfSize) * size + (j + halfSize)] = val;
+        }
+    }
+
+    for (auto &coefficient : coefficients) {
+        coefficient /= sum;
+    }
+
+    return coefficients;
 }
 
+/***********************
+ * Sobel methods
+ ***********************/
 filters::Sobel::Sobel()
-    : kernelX(new kernels::SeparableKernel({1, 0, -1}, {1, 2, 1})),
-      kernelY(new kernels::SeparableKernel({1, 2, 1}, {1, 0, -1})) {
+    : _kernelX(new kernels::SeparableKernel({1, 0, -1}, {1, 2, 1})),
+      _kernelY(new kernels::SeparableKernel({1, 2, 1}, {1, 0, -1})) {
 }
 
 void filters::Sobel::apply(Img& src, borders::BorderTypes border) {
@@ -45,8 +84,8 @@ void filters::Sobel::apply(Img& src, borders::BorderTypes border) {
     Img xSrc = src.clone();
     Img ySrc = src.clone();
 
-    this->kernelX->apply(xSrc, fBorder);
-    this->kernelY->apply(ySrc, fBorder);
+    _kernelX->apply(xSrc, fBorder);
+    _kernelY->apply(ySrc, fBorder);
 
     auto* data = src.data();
     auto* xData = xSrc.data();
@@ -56,3 +95,14 @@ void filters::Sobel::apply(Img& src, borders::BorderTypes border) {
         data[i] = std::sqrt(xData[i] * xData[i] + yData[i] * yData[i]);
     }
 }
+
+void filters::Sobel::applyX(Img& src, borders::BorderTypes border) {
+    auto fBorder = borders::Factory::get(border);
+    _kernelX->apply(src, fBorder);
+}
+
+void filters::Sobel::applyY(Img& src, borders::BorderTypes border) {
+    auto fBorder = borders::Factory::get(border);
+    _kernelY->apply(src, fBorder);
+}
+

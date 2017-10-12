@@ -17,13 +17,17 @@ public:
     typedef std::vector<float> Array1d;
 
 protected:
-    int width;
-    int height;
+    int _width;
+    int _height;
 
 public:
     Kernel(int width, int height);
 
     virtual void apply(Img& src, const borders::Function& fBorder) = 0;
+
+    int width() const;
+
+    int height() const;
 
     virtual ~Kernel() = default;
 };
@@ -32,8 +36,8 @@ public:
 class pi::kernels::SeparableKernel : public Kernel {
 
 private:
-    Array1d mRow;
-    Array1d mCol;
+    Array1d _mRow;
+    Array1d _mCol;
 
 public:
     SeparableKernel(const Array1d& mRow, const Array1d& mCol);

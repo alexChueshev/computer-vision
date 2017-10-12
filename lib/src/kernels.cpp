@@ -6,27 +6,35 @@ kernels::Kernel::Kernel(int width, int height) {
     assert(width > 0 && height > 0);
     assert(width % 2 == 1 && height % 2 == 1);
 
-    this->width = width;
-    this->height = height;
+    _width = width;
+    _height = height;
+}
+
+int kernels::Kernel::width() const {
+    return _width;
+}
+
+int kernels::Kernel::height() const {
+    return _height;
 }
 
 kernels::SeparableKernel::SeparableKernel(const Array1d& mRow, const Array1d& mCol)
         : Kernel(mRow.size(), mCol.size()) {
-    this->mRow = mRow;
-    this->mCol = mCol;
+    _mRow = mRow;
+    _mCol = mCol;
 }
 
 kernels::SeparableKernel::SeparableKernel(Array1d&& mRow, Array1d&& mCol)
         : Kernel(mRow.size(), mCol.size()) {
-    this->mRow = std::move(mRow);
-    this->mCol = std::move(mCol);
+    _mRow = std::move(mRow);
+    _mCol = std::move(mCol);
 }
 
 void kernels::SeparableKernel::apply(Img& src, const borders::Function& fBorder) {
     assert(src.channels() == 1);
 
-    auto cPosX = this->width / 2,
-            cPosY = this->height / 2;
+    auto cPosX = _width / 2,
+            cPosY = _height / 2;
 
     Img tmp(src.height(), src.width(), src.channels());
 
@@ -35,8 +43,8 @@ void kernels::SeparableKernel::apply(Img& src, const borders::Function& fBorder)
         for (auto cI = 0, cEnd = src.width(); cI < cEnd; cI++) {
             auto val = 0.f;
 
-            for (auto kC = 0; kC < this->width; kC++) {
-                val += this->mRow[kC] * fBorder(rI, cI + kC - cPosX, src);
+            for (auto kC = 0; kC < _width; kC++) {
+                val += _mRow[kC] * fBorder(rI, cI + kC - cPosX, src);
             }
             *tmp.at(rI, cI) = val;
         }
@@ -47,8 +55,8 @@ void kernels::SeparableKernel::apply(Img& src, const borders::Function& fBorder)
         for (auto cI = 0, cEnd = src.width(); cI < cEnd; cI++) {
             auto val = 0.f;
 
-            for (auto kR = 0; kR < this->height; kR++) {
-                val += this->mCol[kR] * fBorder(rI + kR - cPosY, cI, tmp);
+            for (auto kR = 0; kR < _height; kR++) {
+                val += _mCol[kR] * fBorder(rI + kR - cPosY, cI, tmp);
             }
             *src.at(rI, cI) = val;
         }

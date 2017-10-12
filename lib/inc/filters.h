@@ -24,25 +24,34 @@ public:
 class pi::filters::Gaussian : public Filter {
 
 protected:
-    float sigma;
-    std::unique_ptr<kernels::Kernel> kernel;
+    float _sigma;
+    std::unique_ptr<kernels::Kernel> _kernel;
 
 public:
     explicit Gaussian(float sigma);
 
     void apply(Img& src, borders::BorderTypes border) override;
+
+public:
+    static std::vector<float> data1d(float sigma, int size);
+
+    static std::vector<float> data2d(float sigma, int size);
 };
 
 class pi::filters::Sobel : public Filter {
 
 protected:
-    std::unique_ptr<kernels::Kernel> kernelX;
-    std::unique_ptr<kernels::Kernel> kernelY;
+    std::unique_ptr<kernels::Kernel> _kernelX;
+    std::unique_ptr<kernels::Kernel> _kernelY;
 
 public:
     explicit Sobel();
 
     void apply(Img& src, borders::BorderTypes border) override;
+
+    void applyX(Img& src, borders::BorderTypes border);
+
+    void applyY(Img& src, borders::BorderTypes border);
 };
 
 #endif //COMPUTER_VISION_FILTERS_H
