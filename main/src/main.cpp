@@ -56,7 +56,7 @@ void l3() {
     moravec.apply(imageMoravec, borders::BORDER_REFLECT).addPointsTo(imageMoravec);
     utils::render("moravek", imageMoravec);
 
-    auto gaussianSigma = .9f;
+    auto gaussianSigma = 1.2f;
     auto gaussianSize = 2 * (int)(gaussianSigma * 3) + 1;
     const auto gaussianPatch = filters::Gaussian::data2d(gaussianSigma, gaussianSize);
     detectors::DetectorHarris harris(gaussianSize, [&gaussianPatch, &gaussianSize](int row, int col) {

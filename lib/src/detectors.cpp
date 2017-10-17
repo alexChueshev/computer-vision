@@ -27,8 +27,8 @@ detectors::Detector& detectors::Detector::addPointsTo(Img& img) {
     for(const auto &point : _points) {
         auto* pixel = img.at(point.row, point.col);
         *(pixel + 0) = .0f;
-        *(pixel + 1) = .0f;
-        *(pixel + 2) = 1.f; //red color
+        *(pixel + 1) = 1.0f;
+        *(pixel + 2) = 1.f; //yellow color
     }
 
     return *this;
@@ -61,7 +61,7 @@ void detectors::Detector::applyThreshold(Img& dst, borders::BorderTypes border) 
             }
 
             if(isMax) {
-                _points.push_back({row, col});
+                _points.push_back({row, col, pixel});
             }
         }
     }

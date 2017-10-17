@@ -27,6 +27,7 @@ struct pi::detectors::Direction {
 struct pi::detectors::Point {
     const int row;
     const int col;
+    const float value;
 };
 
 class pi::detectors::Detector {
@@ -75,8 +76,8 @@ public:
     typedef std::function<float(int, int)> WindowFunction;
 
 public:
-    constexpr static float K = .06f;
-    constexpr static float THRESHOLD = 3.5f;
+    constexpr static float K = .04f;
+    constexpr static float THRESHOLD = 4.f;
     constexpr static int PATCH_SHIFT = 2;
 
 protected:
