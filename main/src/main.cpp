@@ -51,18 +51,20 @@ void l3() {
     ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
     imageProcessing.opts({opts::grayscale, opts::normalize});
 
-    detectors::DetectorMoravec moravec;
-    auto imageMoravec = imageProcessing.image().clone();
-    moravec.apply(imageMoravec, borders::BORDER_REFLECT).addPointsTo(imageMoravec);
-    utils::render("moravek", imageMoravec);
+    detectors::DetectorMoravec moravec(imageProcessing.image());
+    auto imageMoravec = moravec.apply(borders::BORDER_REFLECT)
+            .adaptNonMaximumSuppr(300, [](int x1, int x2, int y1, int y2) {
+        return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    }).addPointsToImage();
+    utils::render("moravec", imageMoravec);
 
     auto gaussianSigma = 1.2f;
     auto gaussianSize = 2 * (int)(gaussianSigma * 3) + 1;
     const auto gaussianPatch = filters::Gaussian::data2d(gaussianSigma, gaussianSize);
-    detectors::DetectorHarris harris(gaussianSize, [&gaussianPatch, &gaussianSize](int row, int col) {
+    detectors::DetectorHarris harris(imageProcessing.image(),gaussianSize,
+                                     [&gaussianPatch, &gaussianSize](int row, int col) {
         return gaussianPatch[row * gaussianSize + col];
     });
-    auto imageHarris = imageProcessing.image().clone();
-    harris.apply(imageHarris, borders::BORDER_REFLECT).addPointsTo(imageHarris);
+    auto imageHarris = harris.apply(borders::BORDER_REFLECT).addPointsToImage();
     utils::render("harris", imageHarris);
 }

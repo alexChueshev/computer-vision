@@ -5,30 +5,54 @@ using namespace pi;
 /***********************
  * Detector methods
  ***********************/
-detectors::Detector& detectors::Detector::addPointsTo(Img& img) {
-    assert(img.channels() == 1);
+detectors::Detector::Detector(const Img& img)
+    : _img(img.clone())
+{
+}
+
+Img detectors::Detector::addPointsToImage() {
+    assert(_img.channels() == 1);
 
     //convert to 3 ch
-    Img tmp(img.height(), img.width(), 3);
+    Img tmp(_img.height(), _img.width(), 3);
 
     auto* dataTmp = tmp.data();
-    auto* dataImg = img.data();
+    auto* dataImg = _img.data();
     auto channels = tmp.channels();
 
-    for(auto i = 0, size = img.dataSize(); i < size; i++) {
+    for(auto i = 0, size = _img.dataSize(); i < size; i++) {
         dataTmp[i * channels] = dataImg[i];
         dataTmp[i * channels + 1] = dataImg[i];
         dataTmp[i * channels + 2] = dataImg[i];
     }
 
-    img = std::move(tmp);
-
     //add points to image
     for(const auto &point : _points) {
-        auto* pixel = img.at(point.row, point.col);
+        auto* pixel = tmp.at(point.row, point.col);
         *(pixel + 0) = .0f;
         *(pixel + 1) = 1.0f;
         *(pixel + 2) = 1.f; //yellow color
+    }
+
+    return tmp;
+}
+
+detectors::Detector& detectors::Detector::adaptNonMaximumSuppr(int points,
+                                                               const DistanceFunction& distanceFunction) {
+    auto radiusMax = std::sqrt(_img.height() * _img.height() + _img.width() * _img.width()) / 2;
+
+    for(auto radius = 0; radius <= radiusMax && _points.size() > points; radius++) {
+        for(auto i = 0; i < _points.size(); i++) {
+            auto pointCur = _points[i];
+            _points.erase(std::remove_if(std::begin(_points) + i + 1, std::end(_points),
+                           [&distanceFunction, &radius, &pointCur](const Point& p) {
+                if(distanceFunction(pointCur.row, p.row, pointCur.col, p.col) < radius
+                        && pointCur.value * ADAPT_NM_SUPR_COEFFICIENT > p.value) {
+                    return true;
+                }
+                return false;
+            }), std::end(_points));
+        }
     }
 
     return *this;
@@ -38,14 +62,18 @@ const std::vector<detectors::Point>& detectors::Detector::points() const {
     return _points;
 }
 
-void detectors::Detector::applyThreshold(Img& dst, borders::BorderTypes border) {
+Img detectors::Detector::image() const {
+    return _img;
+}
+
+void detectors::Detector::applyThreshold(const Img& src, borders::BorderTypes border) {
     auto fBorder = borders::Factory::get(border);
     _points.clear();
 
-    for(auto row = 0, height = dst.height(); row < height; row++) {
-        for(auto col = 0, width = dst.width(); col < width; col++) {
+    for(auto row = 0, height = src.height(); row < height; row++) {
+        for(auto col = 0, width = src.width(); col < width; col++) {
             auto isMax = true;
-            const auto &pixel = *dst.at(row, col);
+            const auto &pixel = *src.at(row, col);
 
             if(pixel < THRESHOLD) continue;
 
@@ -53,7 +81,7 @@ void detectors::Detector::applyThreshold(Img& dst, borders::BorderTypes border) 
                 for(auto kC = -PATCH_SHIFT; kC <= PATCH_SHIFT; kC++) {
                     if(kR == 0 && kC == 0) continue; //only environs
 
-                    if(pixel <= fBorder(row + kR, col + kC, dst)) {
+                    if(pixel <= fBorder(row + kR, col + kC, src)) {
                         isMax = false;
                         break;
                     };
@@ -70,19 +98,18 @@ void detectors::Detector::applyThreshold(Img& dst, borders::BorderTypes border) 
 /***********************
  * DetectorMoravec methods
  ***********************/
-detectors::DetectorMoravec::DetectorMoravec()
-    : _directions({ {{-1,-1}, {0,-1}, {1,-1}, {-1,0}, {1,1}, {1,0}, {-1,1}, {0,1}} })
+detectors::DetectorMoravec::DetectorMoravec(const Img& img)
+    : Detector(img)
+    , _directions({ {{-1,-1}, {0,-1}, {1,-1}, {-1,0}, {1,1}, {1,0}, {-1,1}, {0,1}} })
 {
-    _points.push_back({1,2});
 }
 
-detectors::DetectorMoravec& detectors::DetectorMoravec::apply(const Img& img,
-                                                              borders::BorderTypes border) {
-    assert(img.channels() == 1);
+detectors::DetectorMoravec& detectors::DetectorMoravec::apply(borders::BorderTypes border) {
+    assert(_img.channels() == 1);
 
-    Img dst(img.height(), img.width(), img.channels());
+    Img dst(_img.height(), _img.width(), _img.channels());
 
-    this->applyPatch(img, dst, border);
+    this->applyPatch(_img, dst, border);
     this->applyThreshold(dst, border);
 
     return *this;
@@ -117,19 +144,19 @@ void detectors::DetectorMoravec::applyPatch(const Img& src, Img& dst, borders::B
 /***********************
  * DetectorHarris methods
  ***********************/
-detectors::DetectorHarris::DetectorHarris(int windowSize, WindowFunction windowFunction)
-    : _windowSize(windowSize)
+detectors::DetectorHarris::DetectorHarris(const Img& img, int windowSize, WindowFunction windowFunction)
+    : Detector(std::move(img))
+    , _windowSize(windowSize)
     , _windowFunction(windowFunction)
 {
 }
 
-detectors::DetectorHarris& detectors::DetectorHarris::apply(const Img& img,
-                                                            borders::BorderTypes border) {
-    assert(img.channels() == 1);
+detectors::DetectorHarris& detectors::DetectorHarris::apply(borders::BorderTypes border) {
+    assert(_img.channels() == 1);
 
-    Img dst(img.height(), img.width(), img.channels());
+    Img dst(_img.height(), _img.width(), _img.channels());
 
-    this->applyPatch(img, dst, border);
+    this->applyPatch(_img, dst, border);
     this->applyThreshold(dst, border);
 
     return *this;

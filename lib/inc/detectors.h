@@ -5,6 +5,7 @@
 #include <filters.h>
 
 #include <cfloat>
+#include <algorithm>
 
 namespace pi {
 namespace detectors {
@@ -25,31 +26,42 @@ struct pi::detectors::Direction {
 };
 
 struct pi::detectors::Point {
-    const int row;
-    const int col;
-    const float value;
+    int row;
+    int col;
+    float value;
 };
 
 class pi::detectors::Detector {
 
 public:
+    typedef std::function<float(int, int, int, int)> DistanceFunction;
+
+public:
     constexpr static int PATCH_SHIFT = 2;
     constexpr static float THRESHOLD = .04f;
+    constexpr static float ADAPT_NM_SUPR_COEFFICIENT = .9f;
 
 protected:
+    Img _img;
     std::vector<Point> _points;
 
 public:
-    virtual Detector& apply(const Img& img, borders::BorderTypes border) = 0;
+    Detector(const Img& img);
 
-    Detector& addPointsTo(Img& img);
+    Img addPointsToImage();
+
+    Detector& adaptNonMaximumSuppr(int points, const DistanceFunction& distanceFunction);
 
     const std::vector<Point>& points() const;
+
+    Img image() const;
+
+    virtual Detector& apply(borders::BorderTypes border) = 0;
 
     virtual ~Detector() = default;
 
 protected:
-    void applyThreshold(Img& dst, borders::BorderTypes border);
+    void applyThreshold(const Img& dst, borders::BorderTypes border);
 };
 
 class pi::detectors::DetectorMoravec : public Detector {
@@ -62,9 +74,9 @@ protected:
     std::array<Direction, 8> _directions;
 
 public:
-    DetectorMoravec();
+    DetectorMoravec(const Img& img);
 
-    DetectorMoravec& apply(const Img& img, borders::BorderTypes border) override;
+    DetectorMoravec& apply(borders::BorderTypes border) override;
 
 protected:
     void applyPatch(const Img& src, Img& dst, borders::BorderTypes border);
@@ -85,9 +97,9 @@ protected:
     WindowFunction _windowFunction;
 
 public:
-    DetectorHarris(int windowSize, WindowFunction windowFunction);
+    DetectorHarris(const Img& img, int windowSize, WindowFunction windowFunction);
 
-    DetectorHarris& apply(const Img& img, borders::BorderTypes border) override;
+    DetectorHarris& apply(borders::BorderTypes border) override;
 
 protected:
     void applyPatch(const Img& src, Img& dst, borders::BorderTypes border);
