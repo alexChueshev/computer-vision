@@ -32,17 +32,29 @@ void utils::render(const std::string &window, const pi::Img &img) {
     cv::waitKey(0);
 }
 
-void utils::save(const std::string &path, const pi::Img &img) {
-    assert(img.channels() == 1);
+void utils::save(const std::string &path, const pi::Img &img, const std::string &ext, bool addTime) {
+    assert(img.channels() == 1 || img.channels() == 3);
+
+    std::stringstream ss;
+    ss << path;
+    if(addTime) {
+        auto now = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+        ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%X");
+    }
+    ss << "." << ext;
+    std::string s = ss.str();
 
     pi::Img dst(img.height(), img.width(), img.channels());
 
     auto* dataSrc = img.data();
     auto* dataDst = dst.data();
+    auto type = img.channels() == 1 ? CV_32FC1 : CV_32FC3;
 
     for(auto i = 0, size = img.dataSize(); i < size; i++) {
         dataDst[i] = 255 * dataSrc[i];
     }
 
-    cv::imwrite(path, cv::Mat(dst.height(), dst.width(), CV_32FC1, dataDst));
+    cv::imwrite(ss.str(), cv::Mat(dst.height(), dst.width(), type, dataDst));
 }

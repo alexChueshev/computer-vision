@@ -23,8 +23,9 @@ ImageProcessing& ImageProcessing::load(const std::string& path,
     return *this;
 }
 
-ImageProcessing &ImageProcessing::save(const std::string &path, const SaveFunction &saveFunction) {
-    saveFunction(path, _img);
+ImageProcessing &ImageProcessing::save(const std::string& path, const SaveFunction& saveFunction,
+                                       const std::string& ext, bool addTime) {
+    saveFunction(path, _img, ext, addTime);
 
     return *this;
 }

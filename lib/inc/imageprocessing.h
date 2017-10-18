@@ -14,7 +14,7 @@ public:
     typedef std::function<Img(std::string)> LoadFunction;
     typedef std::function<void(Img&)> OperationFunction;
     typedef std::function<void(Img&, borders::BorderTypes)> FilterFunction;
-    typedef std::function<void(std::string, const Img&)> SaveFunction;
+    typedef std::function<void(std::string, const Img&, std::string, bool)> SaveFunction;
     typedef std::function<void(std::string, const Img&)> RenderFunction;
 
 protected:
@@ -31,7 +31,8 @@ public:
 
     ImageProcessing& load(const std::string& path, const LoadFunction& loadFuntion);
 
-    ImageProcessing& save(const std::string& path, const SaveFunction& saveFunction);
+    ImageProcessing& save(const std::string& path, const SaveFunction& saveFunction,
+                          const std::string& ext="png", bool addTime=true);
 
     ImageProcessing& opts(std::initializer_list<OperationFunction> opts);
 
