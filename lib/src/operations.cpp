@@ -24,13 +24,11 @@ void opts::normalize(Img& src) {
     assert(src.channels() == 1);
     assert(src.height() > 0 && src.width() > 0);
 
-    //find max, min values
+    //find max, min values for one-channel image
     auto* data = src.data();
-    auto min = data[0], max = data[0];
-    for(auto i = 1, size = src.dataSize(); i < size; i++) {
-        if(data[i] > max) max = data[i];
-        if(data[i] < min) min = data[i];
-    }
+    auto minmax = std::minmax_element(data, data + src.dataSize());
+    auto min = *minmax.first;
+    auto max = *minmax.second;
 
     //normalize
     for(auto i = 0, size = src.dataSize(); i < size; i++) {

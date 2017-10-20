@@ -3,6 +3,8 @@
 
 #include <img.h>
 
+#include <algorithm>
+
 namespace pi {
 namespace opts {
     void grayscale(Img& src);
