@@ -3,8 +3,7 @@
 
 #include <img.h>
 
-namespace pi {
-namespace borders {
+namespace pi::borders {
     enum BorderTypes {
         BORDER_CONSTANT,
         BORDER_REPLICATE,
@@ -23,7 +22,7 @@ namespace borders {
     float reflect(int row, int col, const Img& src);
 
     float wrap(int row, int col, const Img& src);
-}}
+}
 
 class pi::borders::Factory {
 

@@ -4,12 +4,11 @@
 #include <borders.h>
 #include <vector>
 
-namespace pi {
-namespace kernels {
+namespace pi::kernels {
     class Kernel;
 
     class SeparableKernel;
-}}
+}
 
 class pi::kernels::Kernel {
 

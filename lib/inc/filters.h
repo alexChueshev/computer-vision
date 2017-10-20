@@ -4,14 +4,13 @@
 #include <kernels.h>
 #include <cmath>
 
-namespace pi {
-namespace filters {
+namespace pi::filters {
     class Filter;
 
     class Gaussian;
 
     class Sobel;
-}}
+}
 
 class pi::filters::Filter {
 

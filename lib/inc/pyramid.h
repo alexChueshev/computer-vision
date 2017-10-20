@@ -3,12 +3,11 @@
 
 #include <octave.h>
 
-namespace pi {
-namespace pyramids {
+namespace pi::pyramids {
     class Pyramid;
 
     class GaussianPyramid;
-}}
+}
 
 class pi::pyramids::Pyramid
 {

@@ -7,8 +7,7 @@
 #include <cfloat>
 #include <algorithm>
 
-namespace pi {
-namespace detectors {
+namespace pi::detectors {
     struct Point;
 
     struct Direction;
@@ -18,7 +17,7 @@ namespace detectors {
     class DetectorMoravec;
 
     class DetectorHarris;
-}}
+}
 
 struct pi::detectors::Direction {
     const int row;

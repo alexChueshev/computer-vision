@@ -6,12 +6,11 @@
 
 #include <vector>
 
-namespace pi {
-namespace pyramids {
+namespace pi::pyramids {
     struct Layer;
 
     class Octave;
-}}
+}
 
 struct pi::pyramids::Layer {
     const Img img;
