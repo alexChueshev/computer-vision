@@ -16,23 +16,20 @@ protected:
     int _height;
     int _channels;
     int _step;
-    std::shared_ptr<float> _data;
-
-private:
-    std::shared_ptr<float> makeSharedArray(int size);
+    std::unique_ptr<float[]> _data;
 
 public:
-    Img();
+    Img() = default;
 
     Img(int height, int width, int channels);
 
     Img(const Img& img);
 
-    Img(Img&& img);
+    Img(Img&& img) = default;
 
     Img& operator=(const Img& img);
 
-    Img& operator=(Img&& img);
+    Img& operator=(Img&& img) = default;
 
     const float* data() const;
 
@@ -62,7 +59,7 @@ public:
 
     Img clone() const;
 
-    virtual ~Img() = default;
+    ~Img() = default;
 };
 
 #endif // COMPUTER_VISION_IMG_H

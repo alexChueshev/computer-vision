@@ -6,7 +6,7 @@ using namespace pi;
  * Detector methods
  ***********************/
 detectors::Detector::Detector(const Img& img)
-    : _img(img.clone())
+    : _img(img)
 {
 }
 
@@ -165,8 +165,8 @@ detectors::DetectorHarris& detectors::DetectorHarris::apply(borders::BorderTypes
 void detectors::DetectorHarris::applyPatch(const Img& src, Img& dst, borders::BorderTypes border) {
     assert(_windowSize % 2 == 1);
 
-    auto pDerivativeX = src.clone();
-    auto pDerivativeY = src.clone();
+    auto pDerivativeX = src;
+    auto pDerivativeY = src;
 
     filters::Sobel sobel;
     sobel.applyX(pDerivativeX, border);

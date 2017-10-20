@@ -47,7 +47,7 @@ public:
 
     ImageProcessing clone() const;
 
-    Img image() const;
+    const Img& image() const;
 };
 
 #endif // COMPUTER_VISION_IMAGEPROCESSING_H

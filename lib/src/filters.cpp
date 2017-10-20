@@ -81,8 +81,8 @@ void filters::Sobel::apply(Img& src, borders::BorderTypes border) {
 
     auto fBorder = borders::Factory::get(border);
 
-    Img xSrc = src.clone();
-    Img ySrc = src.clone();
+    Img xSrc = src;
+    Img ySrc = src;
 
     _kernelX->apply(xSrc, fBorder);
     _kernelY->apply(ySrc, fBorder);

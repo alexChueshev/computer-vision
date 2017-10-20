@@ -2,22 +2,13 @@
 
 using namespace pi;
 
-Img::Img()
-    : _width(0)
-    , _height(0)
-    , _channels(0)
-    , _step(0)
-    , _data(nullptr)
-{
-}
-
 Img::Img(int height, int width, int channels)
     : _width(width)
     , _height(height)
     , _channels(channels)
     , _step(_width * _channels)
+    , _data(std::make_unique<float[]>(_height * _step))
 {
-    _data = this->makeSharedArray(_height * _step);
 }
 
 Img::Img(const Img& img)
@@ -25,19 +16,9 @@ Img::Img(const Img& img)
     , _height(img._height)
     , _channels(img._channels)
     , _step(img._step)
-    , _data(img._data)
+    , _data(std::make_unique<float[]>(_height * _step))
 {
-}
-
-Img::Img(Img&& img)
-    : Img()
-{
-    std::swap(_width, img._width);
-    std::swap(_height, img._height);
-    std::swap(_channels, img._channels);
-    std::swap(_step, img._step);
-
-    _data.swap(img._data);
+    std::copy(img._data.get(), img._data.get() + img.dataSize(), _data.get());
 }
 
 Img& Img::operator=(const Img& img) {
@@ -46,27 +27,9 @@ Img& Img::operator=(const Img& img) {
         _height = img._height;
         _channels = img._channels;
         _step = img._step;
-        _data = img._data;
-    }
-    return *this;
-}
 
-Img& Img::operator=(Img&& img) {
-    if(this != &img) {
-        _width = 0;
-        std::swap(_width, img._width);
-
-        _height = 0;
-        std::swap(_height, img._height);
-
-        _channels = 0;
-        std::swap(_channels, img._channels);
-
-        _step = 0;
-        std::swap(_step, img._step);
-
-        _data = nullptr;
-        img._data.swap(_data);
+        _data = std::make_unique<float[]>(_height * _step);
+        std::copy(img._data.get(), img._data.get() + img.dataSize(), _data.get());
     }
     return *this;
 }
@@ -132,21 +95,3 @@ int Img::imageSize() const {
 int Img::dataSize() const {
     return _height * _step;
 }
-
-Img Img::clone() const {
-    Img img(_height, _width, _channels);
-
-    auto* src = _data.get();
-    auto* dst = img.data();
-
-    for(auto i = 0, size = _height * _step; i < size; i++) {
-        dst[i] = src[i];
-    }
-
-    return img;
-}
-
-std::shared_ptr<float> Img::makeSharedArray(int size) {
-    return std::shared_ptr<float>(new float[size], std::default_delete<float[]>());
-}
-
