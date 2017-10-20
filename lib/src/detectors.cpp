@@ -39,7 +39,7 @@ Img detectors::Detector::addPointsToImage() {
 
 detectors::Detector& detectors::Detector::adaptNonMaximumSuppr(int points,
                                                                const DistanceFunction& distanceFunction) {
-    auto radiusMax = std::sqrt(_img.height() * _img.height() + _img.width() * _img.width()) / 2;
+    auto radiusMax = std::hypot(_img.height(), _img.width()) / 2;
 
     for(auto radius = 0; radius <= radiusMax && _points.size() > points; radius++) {
         for(auto i = 0; i < _points.size(); i++) {

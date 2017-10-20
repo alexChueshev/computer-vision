@@ -92,7 +92,7 @@ void filters::Sobel::apply(Img& src, borders::BorderTypes border) {
     auto* yData = ySrc.data();
 
     for(auto i = 0, size = src.dataSize(); i < size; i++) {
-        data[i] = std::sqrt(xData[i] * xData[i] + yData[i] * yData[i]);
+        data[i] = std::hypot(xData[i], yData[i]);
     }
 }
 

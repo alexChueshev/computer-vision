@@ -57,7 +57,7 @@ void l3() {
     detectors::DetectorMoravec moravec(imageProcessing.image());
     auto imageMoravec = moravec.apply(borders::BORDER_REFLECT)
             .adaptNonMaximumSuppr(300, [](int x1, int x2, int y1, int y2) {
-        return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        return std::hypot((x1 - x2), (y1 - y2));
     }).addPointsToImage();
     utils::render("moravec", imageMoravec);
     utils::save("../examples/lr3/moravec300points", imageMoravec);
