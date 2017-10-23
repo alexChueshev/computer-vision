@@ -50,6 +50,10 @@ ImageProcessing& ImageProcessing::filters(std::initializer_list<
     return *this;
 }
 
+pyramids::GaussianPyramid ImageProcessing::pyramid(size_t numLayers) {
+    return pyramids::GaussianPyramid(_img, numLayers);
+}
+
 ImageProcessing& ImageProcessing::render(const std::string& windowName,
                                          const RenderFunction& renderFunction) {
     renderFunction(windowName, _img);

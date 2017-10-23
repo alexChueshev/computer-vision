@@ -3,6 +3,8 @@
 using namespace pi;
 
 pyramids::GaussianPyramid::GaussianPyramid(const Img& img, size_t numLayers) {
+    assert(img.channels() == 1);
+
     _numOctaves = _numOctavesCalculations(std::min(img.width(), img.height()));
     _octaves.reserve(_numOctaves);
 

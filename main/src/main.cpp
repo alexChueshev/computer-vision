@@ -39,12 +39,12 @@ void l1() {
 
 void l2() {
     ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
-    pyramids::GaussianPyramid pyramid(
-                imageProcessing.opts({opts::grayscale, opts::normalize}).image(), 2);
-
-    pyramid.iterate([](const pyramids::Layer &layer) {
-        utils::save("../examples/lr2/" + std::to_string(layer.sigmaEffective), layer.img);
-    });
+    imageProcessing
+            .opts({opts::grayscale, opts::normalize})
+            .pyramid(2)
+            .iterate([](const pyramids::Layer &layer) {
+                utils::save("../examples/lr2/" + std::to_string(layer.sigmaEffective), layer.img);
+            });
 }
 
 void l3() {
