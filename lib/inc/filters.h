@@ -18,13 +18,18 @@ public:
     virtual Img apply(const Img &src, borders::BorderTypes border) = 0;
 
     virtual ~Filter() = default;
+
+protected:
+    Img _convolve(const Img& src, const kernels::Kernel& kernel, const borders::Function& fBorder);
 };
 
 class pi::filters::Gaussian : public Filter {
 
 protected:
     float _sigma;
-    std::unique_ptr<kernels::Kernel> _kernel;
+    int _size;
+    kernels::Kernel _kernelH;
+    kernels::Kernel _kernelV;
 
 public:
     explicit Gaussian(float sigma);
@@ -40,8 +45,8 @@ public:
 class pi::filters::Sobel : public Filter {
 
 protected:
-    std::unique_ptr<kernels::Kernel> _kernelX;
-    std::unique_ptr<kernels::Kernel> _kernelY;
+    std::pair<kernels::Kernel, kernels::Kernel> _kernelX;
+    std::pair<kernels::Kernel, kernels::Kernel> _kernelY;
 
 public:
     explicit Sobel();

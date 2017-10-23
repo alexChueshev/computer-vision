@@ -2,12 +2,59 @@
 
 using namespace pi;
 
-kernels::Kernel::Kernel(int width, int height) {
+kernels::Kernel::Kernel(int height, int width) {
     assert(width > 0 && height > 0);
     assert(width % 2 == 1 && height % 2 == 1);
 
     _width = width;
     _height = height;
+    _data = std::make_unique<float[]>(_width * _height);
+}
+
+kernels::Kernel::Kernel(int height, int width, const float *data)
+    : kernels::Kernel(height, width) {
+    std::copy(data, data + _height * _width, _data.get());
+}
+
+kernels::Kernel::Kernel(const Kernel& kernel)
+    : _height(kernel._height)
+    , _width(kernel._width)
+    , _data(std::make_unique<float[]>(_height * _width))
+{
+    std::copy(kernel._data.get(), kernel._data.get() + _width * _height, _data.get());
+}
+
+kernels::Kernel& kernels::Kernel::operator=(const Kernel& kernel) {
+    if(this != &kernel) {
+        _height = kernel._height;
+        _width = kernel._width;
+
+        _data = std::make_unique<float[]>(_height * _width);
+        std::copy(kernel._data.get(), kernel._data.get() + _width * _height, _data.get());
+    }
+    return *this;
+}
+
+const float* kernels::Kernel::data() const {
+    return _data.get();
+}
+
+float* kernels::Kernel::data() {
+    return _data.get();
+}
+
+const float* kernels::Kernel::at(int row, int col) const {
+    assert(0 <= row && row < _height);
+    assert(0 <= col && col < _width);
+
+    return _data.get() + _width * row + col;
+}
+
+float* kernels::Kernel::at(int row, int col) {
+    assert(0 <= row && row < _height);
+    assert(0 <= col && col < _width);
+
+    return _data.get() + _width * row + col;
 }
 
 int kernels::Kernel::width() const {
@@ -16,52 +63,4 @@ int kernels::Kernel::width() const {
 
 int kernels::Kernel::height() const {
     return _height;
-}
-
-kernels::SeparableKernel::SeparableKernel(const Array1d& mRow, const Array1d& mCol)
-        : Kernel(mRow.size(), mCol.size()) {
-    _mRow = mRow;
-    _mCol = mCol;
-}
-
-kernels::SeparableKernel::SeparableKernel(Array1d&& mRow, Array1d&& mCol)
-        : Kernel(mRow.size(), mCol.size()) {
-    _mRow = std::move(mRow);
-    _mCol = std::move(mCol);
-}
-
-Img kernels::SeparableKernel::apply(const Img& src, const borders::Function& fBorder) {
-    assert(src.channels() == 1);
-
-    auto cPosX = _width / 2,
-            cPosY = _height / 2;
-
-    Img dst(src.height(), src.width(), src.channels());
-    Img tmp(src.height(), src.width(), src.channels());
-
-    //apply mRow
-    for (auto rI = 0, rEnd = src.height(); rI < rEnd; rI++) {
-        for (auto cI = 0, cEnd = src.width(); cI < cEnd; cI++) {
-            auto val = 0.f;
-
-            for (auto kC = 0; kC < _width; kC++) {
-                val += _mRow[kC] * fBorder(rI, cI + kC - cPosX, src);
-            }
-            *tmp.at(rI, cI) = val;
-        }
-    }
-
-    //apply mCol
-    for (auto rI = 0, rEnd = src.height(); rI < rEnd; rI++) {
-        for (auto cI = 0, cEnd = src.width(); cI < cEnd; cI++) {
-            auto val = 0.f;
-
-            for (auto kR = 0; kR < _height; kR++) {
-                val += _mCol[kR] * fBorder(rI + kR - cPosY, cI, tmp);
-            }
-            *dst.at(rI, cI) = val;
-        }
-    }
-
-    return dst;
 }

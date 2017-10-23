@@ -3,21 +3,57 @@
 using namespace pi;
 
 /***********************
+ * Filter methods
+ ***********************/
+Img filters::Filter::_convolve(const Img& src, const kernels::Kernel& kernel,
+                               const borders::Function& fBorder)
+{
+    assert(src.channels() == 1);
+
+    auto cPosX = kernel.width() / 2, cPosY = kernel.height() / 2;
+    Img tmp(src.height(), src.width(), src.channels());
+
+    for (auto rI = 0, rEnd = src.height(); rI < rEnd; rI++) {
+        for (auto cI = 0, cEnd = src.width(); cI < cEnd; cI++) {
+            auto val = 0.f;
+
+            for (auto kR = 0, kREnd = kernel.height(); kR < kREnd; kR++) {
+                for(auto kC = 0, kCEnd = kernel.width(); kC < kCEnd; kC++) {
+                    auto r = rI + kR - cPosY,
+                         c = cI + kC - cPosX;
+
+                    val += *kernel.at(kR, kC) * fBorder(r, c, src);
+                }
+            }
+            *tmp.at(rI, cI) = val;
+        }
+    }
+
+    return tmp;
+}
+
+/***********************
  * Gaussian methods
  ***********************/
 filters::Gaussian::Gaussian(float sigma)
-        : _sigma(sigma) {
+    : _sigma(sigma)
+    , _size(2 * (int)(sigma * 3) + 1)
+    , _kernelH(1, _size)
+    , _kernelV(_size, 1)
+{
     assert(sigma > 0);
 
-    std::vector<float> coefficients = data1d(_sigma, (2 * (int)(sigma * 3) + 1));
-
-    _kernel = std::make_unique<kernels::SeparableKernel>(coefficients,coefficients);
+    std::vector<float> coefficients = data1d(_sigma, _size);
+    std::copy(std::begin(coefficients), std::end(coefficients), _kernelH.data());
+    std::copy(std::begin(coefficients), std::end(coefficients), _kernelV.data());
 }
 
 Img filters::Gaussian::apply(const Img& src, borders::BorderTypes border) {
     assert(src.channels() == 1);
 
-    return _kernel->apply(src, borders::Factory::get(border));
+    auto fBorder = borders::Factory::get(border);
+
+    return _convolve(_convolve(src, _kernelH, fBorder), _kernelV, fBorder);
 }
 
 std::vector<float> filters::Gaussian::data1d(float sigma, int size) {
@@ -72,8 +108,11 @@ std::vector<float> filters::Gaussian::data2d(float sigma, int size) {
  * Sobel methods
  ***********************/
 filters::Sobel::Sobel()
-    : _kernelX(new kernels::SeparableKernel({1, 0, -1}, {1, 2, 1})),
-      _kernelY(new kernels::SeparableKernel({1, 2, 1}, {1, 0, -1})) {
+    : _kernelX(kernels::Kernel(1, 3, new float[3]{1, 0, -1}),
+               kernels::Kernel(3, 1, new float[3]{1, 2, 1}))
+    , _kernelY(kernels::Kernel(1, 3, new float[3]{1, 2, 1}),
+               kernels::Kernel(3, 1, new float[3]{1, 0, -1}))
+{
 }
 
 Img filters::Sobel::apply(const Img& src, borders::BorderTypes border) {
@@ -82,8 +121,8 @@ Img filters::Sobel::apply(const Img& src, borders::BorderTypes border) {
     auto fBorder = borders::Factory::get(border);
 
     Img dst(src.height(), src.width(), src.channels());
-    Img xSrc = _kernelX->apply(src, fBorder);
-    Img ySrc = _kernelY->apply(src, fBorder);
+    Img xSrc = _convolve(_convolve(src, _kernelX.first, fBorder), _kernelX.second, fBorder);
+    Img ySrc = _convolve(_convolve(src, _kernelY.first, fBorder), _kernelY.second, fBorder);
 
     auto* data = dst.data();
     auto* xData = xSrc.data();
@@ -97,9 +136,11 @@ Img filters::Sobel::apply(const Img& src, borders::BorderTypes border) {
 }
 
 Img filters::Sobel::applyX(const Img& src, borders::BorderTypes border) {
-    return _kernelX->apply(src, borders::Factory::get(border));
+    auto fBorder = borders::Factory::get(border);
+    return _convolve(_convolve(src, _kernelX.first, fBorder), _kernelX.second, fBorder);
 }
 
 Img filters::Sobel::applyY(const Img& src, borders::BorderTypes border) {
-    return _kernelY->apply(src, borders::Factory::get(border));
+    auto fBorder = borders::Factory::get(border);
+    return _convolve(_convolve(src, _kernelY.first, fBorder), _kernelY.second, fBorder);
 }

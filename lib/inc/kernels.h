@@ -6,44 +6,41 @@
 
 namespace pi::kernels {
     class Kernel;
-
-    class SeparableKernel;
 }
 
 class pi::kernels::Kernel {
 
-public:
-    typedef std::vector<float> Array1d;
-
 protected:
-    int _width;
     int _height;
+    int _width;
+    std::unique_ptr<float[]> _data;
 
 public:
-    Kernel(int width, int height);
+    Kernel(int height, int width);
 
-    virtual Img apply(const Img& src, const borders::Function& fBorder) = 0;
+    Kernel(int height, int width, const float* data);
+
+    Kernel(const Kernel& kernel);
+
+    Kernel(Kernel&& kernel) = default;
+
+    Kernel& operator=(const Kernel& kernel);
+
+    Kernel& operator=(Kernel&& kernel) = default;
+
+    const float* data() const;
+
+    float* data();
+
+    const float* at(int row, int col) const;
+
+    float* at(int row, int col);
 
     int width() const;
 
     int height() const;
 
-    virtual ~Kernel() = default;
-};
-
-
-class pi::kernels::SeparableKernel : public Kernel {
-
-private:
-    Array1d _mRow;
-    Array1d _mCol;
-
-public:
-    SeparableKernel(const Array1d& mRow, const Array1d& mCol);
-
-    SeparableKernel(Array1d&& mRow, Array1d&& mCol);
-
-    Img apply(const Img& src, const borders::Function& fBorder) override;
+    ~Kernel() = default;
 };
 
 #endif //COMPUTER_VISION_KERNEL_H
