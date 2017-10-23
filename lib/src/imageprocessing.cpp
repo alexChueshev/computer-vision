@@ -23,7 +23,7 @@ ImageProcessing& ImageProcessing::load(const std::string& path,
     return *this;
 }
 
-ImageProcessing &ImageProcessing::save(const std::string& path, const SaveFunction& saveFunction,
+ImageProcessing& ImageProcessing::save(const std::string& path, const SaveFunction& saveFunction,
                                        const std::string& ext, bool addTime) {
     saveFunction(path, _img, ext, addTime);
 
@@ -31,9 +31,10 @@ ImageProcessing &ImageProcessing::save(const std::string& path, const SaveFuncti
 }
 
 ImageProcessing& ImageProcessing::opts(std::initializer_list<OperationFunction> opts) {
-    for(const auto &opt: opts) {
-        opt(_img);
-    }
+    _img = std::accumulate(std::begin(opts), std::end(opts), _img,
+                           [](const Img& img, const OperationFunction& opts) {
+        return opts(img);
+    });
 
     return *this;
 }

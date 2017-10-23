@@ -2,7 +2,7 @@
 
 using namespace pi;
 
-void opts::grayscale(Img& src) {
+Img opts::grayscale(const Img& src) {
     assert(src.channels() == 3);
 
     Img graycale(src.height(), src.width(), 1);
@@ -17,29 +17,35 @@ void opts::grayscale(Img& src) {
                       .114f * srcData[channels * i]) / 255;
     }
 
-    src = std::move(graycale);
+    return graycale;
 }
 
-void opts::normalize(Img& src) {
+Img opts::normalize(const Img& src) {
     assert(src.channels() == 1);
     assert(src.height() > 0 && src.width() > 0);
 
+    Img normalized(src.height(), src.width(), 1);
+
+    auto* dataNormalized = normalized.data();
+    auto* dataSrc = src.data();
+
     //find max, min values for one-channel image
-    auto* data = src.data();
-    auto minmax = std::minmax_element(data, data + src.dataSize());
+    auto minmax = std::minmax_element(dataSrc, dataSrc + src.dataSize());
     auto min = *minmax.first;
     auto max = *minmax.second;
 
     //normalize
     for(auto i = 0, size = src.dataSize(); i < size; i++) {
-        data[i] = (data[i] - min) / (max - min);
+        dataNormalized[i] = (dataSrc[i] - min) / (max - min);
     }
+
+    return normalized;
 }
 
-void opts::scale(Img& src) {
+Img opts::scale(const Img& src) {
     assert(src.channels() == 1);
 
-    Img scaled(src.height() / 2, src.width() / 2, src.channels());
+    Img scaled(src.height() / 2, src.width() / 2, 1);
 
     for(auto i = 0, height = scaled.height(); i < height; i++) {
         for(auto j = 0, width = scaled.width(); j < width; j++) {
@@ -50,5 +56,5 @@ void opts::scale(Img& src) {
         }
     }
 
-    src = std::move(scaled);
+    return scaled;
 }

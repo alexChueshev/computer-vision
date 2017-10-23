@@ -6,11 +6,11 @@
 #include <algorithm>
 
 namespace pi::opts {
-    void grayscale(Img& src);
+    Img grayscale(const Img& src);
 
-    void normalize(Img& src);
+    Img normalize(const Img& src);
 
-    void scale(Img& src);
+    Img scale(const Img& src);
 }
 
 #endif //COMPUTER_VISION_OPERATIONS_H
