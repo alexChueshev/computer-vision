@@ -4,29 +4,14 @@
 #include <octave.h>
 
 namespace pi::pyramids {
-    class Pyramid;
-
     class GaussianPyramid;
 }
 
-class pi::pyramids::Pyramid
-{
+class pi::pyramids::GaussianPyramid {
 
 public:
     typedef std::function<void(const Octave&)> LoopOctaveFunction;
     typedef std::function<void(const Layer&)> LoopLayerFunction;
-
-public:
-    virtual Pyramid& apply(const Img& img, size_t numLayers) = 0;
-
-    virtual const Pyramid& whileLoop(const LoopOctaveFunction& loopFunction) const = 0;
-
-    virtual const Pyramid& whileLoop(const LoopLayerFunction& loopFunction) const = 0;
-
-    virtual ~Pyramid() = default;
-};
-
-class pi::pyramids::GaussianPyramid : public Pyramid {
 
 public:
     constexpr static int MIN_OCTAVE_IMG_SIZE = 16;
@@ -38,16 +23,16 @@ protected:
     std::vector<Octave> _octaves;
 
 public:
-    GaussianPyramid& apply(const Img& img, size_t numLayers) override;
+    GaussianPyramid(const Img& img, size_t numLayers);
 
-    const GaussianPyramid& whileLoop(const LoopOctaveFunction& loopFunction) const override;
+    const GaussianPyramid& iterate(const LoopOctaveFunction& loopFunction) const;
 
-    const GaussianPyramid& whileLoop(const LoopLayerFunction& loopFunction) const override;
+    const GaussianPyramid& iterate(const LoopLayerFunction& loopFunction) const;
 
     const std::vector<Octave>& octaves() const;
 
 protected:
-    size_t numOctavesCalculations(int minImgMeasurement);
+    size_t _numOctavesCalculations(int minImgMeasurement);
 };
 
 #endif // COMPUTER_VISION_PYRAMID_H

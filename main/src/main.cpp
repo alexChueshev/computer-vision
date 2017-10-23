@@ -38,11 +38,11 @@ void l1() {
 }
 
 void l2() {
-    pyramids::GaussianPyramid pyramid;
     ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
+    pyramids::GaussianPyramid pyramid(
+                imageProcessing.opts({opts::grayscale, opts::normalize}).image(), 2);
 
-    auto image = imageProcessing.opts({opts::grayscale, opts::normalize}).image();
-    pyramid.apply(image, 2).whileLoop([](const pyramids::Layer &layer) {
+    pyramid.iterate([](const pyramids::Layer &layer) {
         utils::save("../examples/lr2/" + std::to_string(layer.sigmaEffective), layer.img);
     });
 }

@@ -43,12 +43,12 @@ public:
 
     Octave& createLayers();
 
-    const Octave& whileLoop(const LoopFunction& loopFuction) const;
+    const Octave& iterate(const LoopFunction& loopFuction) const;
 
     const std::vector<Layer>& layers() const;
 
 protected:
-    float step(size_t numLayers);
+    float _calcStep(size_t numLayers);
 };
 
 #endif // COMPUTER_VISION_OCTAVE_H
