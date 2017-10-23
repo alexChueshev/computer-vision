@@ -57,8 +57,6 @@ public:
 
     int dataSize() const;
 
-    Img clone() const;
-
     ~Img() = default;
 };
 
