@@ -41,9 +41,11 @@ ImageProcessing& ImageProcessing::opts(std::initializer_list<OperationFunction> 
 
 ImageProcessing& ImageProcessing::filters(std::initializer_list<
                                           std::pair<borders::BorderTypes, FilterFunction>> filters) {
-    for(const auto &filter: filters) {
-        filter.second(_img, filter.first);
-    }
+    _img = std::accumulate(std::begin(filters), std::end(filters), _img,
+                           [](const Img& img,
+                              const std::pair<borders::BorderTypes, FilterFunction>& filter) {
+        return filter.second(img, filter.first);
+    });
 
     return *this;
 }

@@ -15,7 +15,7 @@ namespace pi::filters {
 class pi::filters::Filter {
 
 public:
-    virtual void apply(Img &src, borders::BorderTypes border) = 0;
+    virtual Img apply(const Img &src, borders::BorderTypes border) = 0;
 
     virtual ~Filter() = default;
 };
@@ -29,7 +29,7 @@ protected:
 public:
     explicit Gaussian(float sigma);
 
-    void apply(Img& src, borders::BorderTypes border) override;
+    Img apply(const Img& src, borders::BorderTypes border) override;
 
 public:
     static std::vector<float> data1d(float sigma, int size);
@@ -46,11 +46,11 @@ protected:
 public:
     explicit Sobel();
 
-    void apply(Img& src, borders::BorderTypes border) override;
+    Img apply(const Img& src, borders::BorderTypes border) override;
 
-    void applyX(Img& src, borders::BorderTypes border);
+    Img applyX(const Img& src, borders::BorderTypes border);
 
-    void applyY(Img& src, borders::BorderTypes border);
+    Img applyY(const Img& src, borders::BorderTypes border);
 };
 
 #endif //COMPUTER_VISION_FILTERS_H

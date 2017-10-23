@@ -30,12 +30,13 @@ kernels::SeparableKernel::SeparableKernel(Array1d&& mRow, Array1d&& mCol)
     _mCol = std::move(mCol);
 }
 
-void kernels::SeparableKernel::apply(Img& src, const borders::Function& fBorder) {
+Img kernels::SeparableKernel::apply(const Img& src, const borders::Function& fBorder) {
     assert(src.channels() == 1);
 
     auto cPosX = _width / 2,
             cPosY = _height / 2;
 
+    Img dst(src.height(), src.width(), src.channels());
     Img tmp(src.height(), src.width(), src.channels());
 
     //apply mRow
@@ -58,7 +59,9 @@ void kernels::SeparableKernel::apply(Img& src, const borders::Function& fBorder)
             for (auto kR = 0; kR < _height; kR++) {
                 val += _mCol[kR] * fBorder(rI + kR - cPosY, cI, tmp);
             }
-            *src.at(rI, cI) = val;
+            *dst.at(rI, cI) = val;
         }
     }
+
+    return dst;
 }

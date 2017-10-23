@@ -15,7 +15,7 @@ class pi::ImageProcessing
 public:
     typedef std::function<Img(std::string)> LoadFunction;
     typedef std::function<Img(const Img&)> OperationFunction;
-    typedef std::function<void(Img&, borders::BorderTypes)> FilterFunction;
+    typedef std::function<Img(const Img&, borders::BorderTypes)> FilterFunction;
     typedef std::function<void(std::string, const Img&, std::string, bool)> SaveFunction;
     typedef std::function<void(std::string, const Img&)> RenderFunction;
 

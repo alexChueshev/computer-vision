@@ -29,10 +29,8 @@ pyramids::Octave::Octave(const Img& img, size_t numLayers,
     , _numLayers(numLayers)
     , _sigmaDelta(sigmaDelta)
 {
-    auto layerImg = img;
-
     filters::Gaussian gaussian(_sigmaDelta(sigmaPrev, sigmaNext));
-    gaussian.apply(layerImg, borders::BORDER_REFLECT);
+    auto layerImg = gaussian.apply(img, borders::BORDER_REFLECT);
 
     _layers.push_back({std::move(layerImg), sigmaNext, sigmaNext});
 }
@@ -41,11 +39,9 @@ pi::pyramids::Octave pyramids::Octave::nextOctave() const {
     auto &lastOctaveLayer = _layers.back();
     auto &firstOctaveLayer = _layers.front();
 
-    auto layerImg = lastOctaveLayer.img;
+    auto layerImg = opts::scale(lastOctaveLayer.img);
     auto sigma = firstOctaveLayer.sigma;
     auto sigmaEffective = _step * lastOctaveLayer.sigmaEffective;
-
-    opts::scale(layerImg);
 
     return Octave({std::move(layerImg), sigma, sigmaEffective}, _numLayers, _sigmaDelta);
 }
@@ -53,13 +49,11 @@ pi::pyramids::Octave pyramids::Octave::nextOctave() const {
 pyramids::Octave& pyramids::Octave::createLayers() {
     for(size_t i = 1; i < _numLayers; i++) {
         auto &prevLayer = _layers.back();
-        auto layerImg = prevLayer.img;
-
         auto sigma = _step * prevLayer.sigma;
         auto sigmaEffective = _step * prevLayer.sigmaEffective;
 
         filters::Gaussian gaussian(_sigmaDelta(prevLayer.sigma, sigma));
-        gaussian.apply(layerImg, borders::BORDER_REFLECT);
+        auto layerImg = gaussian.apply(prevLayer.img, borders::BORDER_REFLECT);
 
         _layers.push_back({std::move(layerImg), sigma, sigmaEffective});
     }

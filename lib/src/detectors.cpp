@@ -145,7 +145,7 @@ void detectors::DetectorMoravec::applyPatch(const Img& src, Img& dst, borders::B
  * DetectorHarris methods
  ***********************/
 detectors::DetectorHarris::DetectorHarris(const Img& img, int windowSize, WindowFunction windowFunction)
-    : Detector(std::move(img))
+    : Detector(img)
     , _windowSize(windowSize)
     , _windowFunction(windowFunction)
 {
@@ -165,12 +165,9 @@ detectors::DetectorHarris& detectors::DetectorHarris::apply(borders::BorderTypes
 void detectors::DetectorHarris::applyPatch(const Img& src, Img& dst, borders::BorderTypes border) {
     assert(_windowSize % 2 == 1);
 
-    auto pDerivativeX = src;
-    auto pDerivativeY = src;
-
     filters::Sobel sobel;
-    sobel.applyX(pDerivativeX, border);
-    sobel.applyY(pDerivativeY, border);
+    auto pDerivativeX = sobel.applyX(src, border);
+    auto pDerivativeY = sobel.applyY(src, border);
 
     auto fBorder = borders::Factory::get(border);
     auto hSize = _windowSize / 2;

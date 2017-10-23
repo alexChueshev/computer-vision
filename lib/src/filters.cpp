@@ -14,10 +14,10 @@ filters::Gaussian::Gaussian(float sigma)
     _kernel = std::make_unique<kernels::SeparableKernel>(coefficients,coefficients);
 }
 
-void filters::Gaussian::apply(Img& src, borders::BorderTypes border) {
+Img filters::Gaussian::apply(const Img& src, borders::BorderTypes border) {
     assert(src.channels() == 1);
 
-    _kernel->apply(src, borders::Factory::get(border));
+    return _kernel->apply(src, borders::Factory::get(border));
 }
 
 std::vector<float> filters::Gaussian::data1d(float sigma, int size) {
@@ -76,33 +76,30 @@ filters::Sobel::Sobel()
       _kernelY(new kernels::SeparableKernel({1, 2, 1}, {1, 0, -1})) {
 }
 
-void filters::Sobel::apply(Img& src, borders::BorderTypes border) {
+Img filters::Sobel::apply(const Img& src, borders::BorderTypes border) {
     assert(src.channels() == 1);
 
     auto fBorder = borders::Factory::get(border);
 
-    Img xSrc = src;
-    Img ySrc = src;
+    Img dst(src.height(), src.width(), src.channels());
+    Img xSrc = _kernelX->apply(src, fBorder);
+    Img ySrc = _kernelY->apply(src, fBorder);
 
-    _kernelX->apply(xSrc, fBorder);
-    _kernelY->apply(ySrc, fBorder);
-
-    auto* data = src.data();
+    auto* data = dst.data();
     auto* xData = xSrc.data();
     auto* yData = ySrc.data();
 
     for(auto i = 0, size = src.dataSize(); i < size; i++) {
         data[i] = std::hypot(xData[i], yData[i]);
     }
+
+    return dst;
 }
 
-void filters::Sobel::applyX(Img& src, borders::BorderTypes border) {
-    auto fBorder = borders::Factory::get(border);
-    _kernelX->apply(src, fBorder);
+Img filters::Sobel::applyX(const Img& src, borders::BorderTypes border) {
+    return _kernelX->apply(src, borders::Factory::get(border));
 }
 
-void filters::Sobel::applyY(Img& src, borders::BorderTypes border) {
-    auto fBorder = borders::Factory::get(border);
-    _kernelY->apply(src, fBorder);
+Img filters::Sobel::applyY(const Img& src, borders::BorderTypes border) {
+    return _kernelY->apply(src, borders::Factory::get(border));
 }
-
