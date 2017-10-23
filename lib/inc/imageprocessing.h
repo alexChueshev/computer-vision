@@ -23,8 +23,6 @@ protected:
     Img _img;
 
 public:
-    ImageProcessing() = default;
-
     explicit ImageProcessing(const Img& img);
 
     explicit ImageProcessing(Img&& img);
@@ -42,12 +40,6 @@ public:
                              std::pair<borders::BorderTypes, FilterFunction>> filters);
 
     ImageProcessing& render(const std::string& windowName, const RenderFunction& renderFunction);
-
-    ImageProcessing& apply(const Img& img);
-
-    ImageProcessing& apply(Img&& img);
-
-    ImageProcessing clone() const;
 
     const Img& image() const;
 };
