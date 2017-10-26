@@ -14,27 +14,24 @@ void l2();
 void l3();
 
 int main() {
-    //l1();
+    l1();
     //l2();
-    l3();
+    //l3();
 
     return 0;
 }
 
 void l1() {
-    ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
+    auto image = filters::sobel(
+                      filters::gaussian(
+                        opts::normalize(
+                            opts::grayscale(
+                                utils::load("/home/alexander/Lenna.png"))),
+                                    1.8f, borders::BORDER_REPLICATE),
+                                        borders::BORDER_REPLICATE, filters::magnitude);
 
-    filters::Sobel sobel;
-    auto sobelFunction = std::bind(&filters::Sobel::apply, &sobel, _1, _2);
-
-    filters::Gaussian gaussian(1.8f);
-    auto gaussianFunction = std::bind(&filters::Gaussian::apply, &gaussian, _1, _2);
-
-    imageProcessing.opts({opts::grayscale, opts::normalize})
-                   .filters({std::make_pair(borders::BORDER_REPLICATE, gaussianFunction),
-                             std::make_pair(borders::BORDER_REPLICATE, sobelFunction)})
-                    .render("result", utils::render)
-                    .save("../examples/lr1/sobel", utils::save);
+    utils::render("result", image);
+    utils::save("../examples/lr1/sobel", image);
 }
 
 void l2() {

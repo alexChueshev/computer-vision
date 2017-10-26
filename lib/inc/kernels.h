@@ -2,10 +2,23 @@
 #define COMPUTER_VISION_KERNEL_H
 
 #include <borders.h>
-#include <vector>
+
+#include <cmath>
 
 namespace pi::kernels {
     class Kernel;
+
+    Kernel gaussian1d(float sigma, int size);
+
+    Kernel gaussian2d(float sigma, int size);
+
+    std::pair<Kernel, Kernel> gaussian(float sigma);
+
+    std::pair<Kernel, Kernel> gaussian(float sigma, int size);
+
+    std::pair<Kernel, Kernel> sobelX();
+
+    std::pair<Kernel, Kernel> sobelY();
 }
 
 class pi::kernels::Kernel {
@@ -39,6 +52,8 @@ public:
     int width() const;
 
     int height() const;
+
+    Kernel transpose();
 
     ~Kernel() = default;
 };

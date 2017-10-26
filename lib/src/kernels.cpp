@@ -64,3 +64,97 @@ int kernels::Kernel::width() const {
 int kernels::Kernel::height() const {
     return _height;
 }
+
+pi::kernels::Kernel kernels::Kernel::transpose() {
+    Kernel transposed(_width, _height);
+    auto* data = transposed.data();
+
+    for (auto i = 0; i < _height; i++) {
+        for (auto j = 0; j< _width; j++) {
+           data[j * _height + i] = _data[i * _width + j];
+        }
+    }
+
+    return transposed;
+}
+
+kernels::Kernel kernels::gaussian1d(float sigma, int size) {
+    assert(sigma > 0);
+    assert(size % 2 == 1);
+
+    auto sum = 0.f;
+    auto halfSize = size / 2;
+    float div = std::sqrt(2 * M_PI) * sigma;
+
+    kernels::Kernel gaussian(1, size);
+    auto* data = gaussian.data();
+
+    for (auto i = -halfSize; i <= halfSize; i++) {
+        auto val = std::exp(-i * i / (2 * sigma * sigma)) / div;
+
+        sum += val;
+        data[i + halfSize] = val;
+    }
+
+    for(auto i = 0; i < size; i++) {
+        data[i] /= sum;
+    }
+
+    return gaussian;
+}
+
+kernels::Kernel kernels::gaussian2d(float sigma, int size) {
+    assert(sigma > 0);
+    assert(size % 2 == 1);
+
+    auto sum = 0.f;
+    auto halfSize = size / 2;
+    float div = 2 * M_PI * sigma * sigma;
+
+    kernels::Kernel gaussian(size, size);
+    auto* data = gaussian.data();
+
+    for (auto i = -halfSize; i <= halfSize; i++) {
+        for(auto j = -halfSize; j <= halfSize; j++) {
+            auto val = std::exp(-(i * i + j * j) / (2 * sigma * sigma)) / div;
+
+            sum += val;
+            data[(i + halfSize) * size + (j + halfSize)] = val;
+        }
+    }
+
+    for(auto i = 0, count = size * size; i < count; i++) {
+        data[i] /= sum;
+    }
+
+    return gaussian;
+}
+
+std::pair<kernels::Kernel, kernels::Kernel> kernels::gaussian(float sigma) {
+    auto size = 2 * (int)(sigma * 3) + 1;
+    auto gaussian = gaussian1d(sigma, size);
+
+    return std::pair<kernels::Kernel, kernels::Kernel>(
+                gaussian,
+                gaussian.transpose());
+}
+
+std::pair<kernels::Kernel, kernels::Kernel> kernels::gaussian(float sigma, int size) {
+    auto gaussian = gaussian1d(sigma, size);
+
+    return std::pair<kernels::Kernel, kernels::Kernel>(
+                gaussian,
+                gaussian.transpose());
+}
+
+std::pair<kernels::Kernel, kernels::Kernel> kernels::sobelX() {
+    return std::pair<kernels::Kernel, kernels::Kernel>(
+                kernels::Kernel(1, 3, new float[3]{1, 0, -1}),
+                kernels::Kernel(3, 1, new float[3]{1, 2, 1}));
+}
+
+std::pair<kernels::Kernel, kernels::Kernel> kernels::sobelY() {
+    return std::pair<kernels::Kernel, kernels::Kernel>(
+                kernels::Kernel(1, 3, new float[3]{1, 2, 1}),
+                kernels::Kernel(3, 1, new float[3]{1, 0, -1}));
+}
