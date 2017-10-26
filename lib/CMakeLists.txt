@@ -8,7 +8,5 @@ add_library(lib
         src/filters.cpp inc/filters.h
         src/borders.cpp inc/borders.h
         src/img.cpp inc/img.h
-        src/imageprocessing.cpp inc/imageprocessing.h
         src/pyramid.cpp inc/pyramid.h
-        src/octave.cpp inc/octave.h
         src/detectors.cpp inc/detectors.h)

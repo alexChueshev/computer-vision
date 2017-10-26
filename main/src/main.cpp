@@ -1,4 +1,3 @@
-#include <imageprocessing.h>
 #include <pyramid.h>
 #include <detectors.h>
 
@@ -14,8 +13,8 @@ void l2();
 void l3();
 
 int main() {
-    l1();
-    //l2();
+    //l1();
+    l2();
     //l3();
 
     return 0;
@@ -35,13 +34,15 @@ void l1() {
 }
 
 void l2() {
-    ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
-    imageProcessing
-            .opts({opts::grayscale, opts::normalize})
-            .pyramid(2)
-            .iterate([](const pyramids::Layer &layer) {
-                utils::save("../examples/lr2/" + std::to_string(layer.sigmaEffective), layer.img);
-            });
+    pyramids::iterate(
+        pyramids::gpyramid(
+            opts::normalize(
+                opts::grayscale(
+                    utils::load("/home/alexander/Lenna.png"))),
+                        2, pyramids::logOctavesCount),
+                            [](const pyramids::Layer& layer) {
+        utils::save("../examples/lr2/" + std::to_string(layer.sigmaEffective), layer.img);
+    });
 }
 
 void l3() {

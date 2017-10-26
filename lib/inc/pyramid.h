@@ -1,17 +1,36 @@
 #ifndef COMPUTER_VISION_PYRAMID_H
 #define COMPUTER_VISION_PYRAMID_H
 
-#include <octave.h>
+#include <filters.h>
+#include <operations.h>
+
+#include <vector>
 
 namespace pi::pyramids {
-    class GaussianPyramid;
-}
+    struct Layer;
 
-class pi::pyramids::GaussianPyramid {
+    class Octave;
 
-public:
+    typedef std::function<int(int)> OctavesNumberFunction;
     typedef std::function<void(const Octave&)> LoopOctaveFunction;
     typedef std::function<void(const Layer&)> LoopLayerFunction;
+
+    std::vector<Octave> gpyramid(const Img& img, int layers, const OctavesNumberFunction& op);
+
+    int logOctavesCount(int dimension);
+
+    void iterate(const std::vector<Octave>& octaves, const LoopOctaveFunction& loopFunction);
+
+    void iterate(const std::vector<Octave>& octaves, const LoopLayerFunction& loopFunction);
+}
+
+struct pi::pyramids::Layer {
+    const Img img;
+    const float sigma;
+    const float sigmaEffective;
+};
+
+class pi::pyramids::Octave {
 
 public:
     constexpr static int MIN_OCTAVE_IMG_SIZE = 16;
@@ -19,20 +38,27 @@ public:
     constexpr static float SIGMA_START = .5f;
 
 protected:
-    size_t _numOctaves;
-    std::vector<Octave> _octaves;
+    float _step;
+    int _numLayers;
+    std::vector<Layer> _layers;
 
 public:
-    GaussianPyramid(const Img& img, size_t numLayers);
+    Octave(const Layer& layer, int numLayers);
 
-    const GaussianPyramid& iterate(const LoopOctaveFunction& loopFunction) const;
+    Octave(Layer&& layer, int numLayers);
 
-    const GaussianPyramid& iterate(const LoopLayerFunction& loopFunction) const;
+    Octave(const Img& img, int numLayers, float sigmaPrev, float sigmaNext);
 
-    const std::vector<Octave>& octaves() const;
+    Octave nextOctave() const;
+
+    Octave& createLayers();
+
+    const std::vector<Layer>& layers() const;
 
 protected:
-    size_t _numOctavesCalculations(int minImgMeasurement);
+    float _calcStep(int numLayers);
+
+    float _sigmaDelta(float sigmaPrev, float sigmaNext);
 };
 
 #endif // COMPUTER_VISION_PYRAMID_H
