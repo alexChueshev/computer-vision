@@ -6,6 +6,7 @@
 
 #include <cfloat>
 #include <algorithm>
+#include <vector>
 
 namespace pi::detectors {
     struct Point;

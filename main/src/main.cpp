@@ -45,12 +45,9 @@ void l2() {
 }
 
 void l3() {
-    ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
+    /*ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
     imageProcessing.opts({opts::grayscale, opts::normalize});
 
-    /**
-     * @brief moravec
-     */
     detectors::DetectorMoravec moravec(imageProcessing.image());
     auto imageMoravec = moravec.apply(borders::BORDER_REFLECT)
             .adaptNonMaximumSuppr(300, [](int x1, int x2, int y1, int y2) {
@@ -59,9 +56,6 @@ void l3() {
     utils::render("moravec", imageMoravec);
     utils::save("../examples/lr3/moravec300points", imageMoravec);
 
-    /**
-     * @brief harris
-     */
     auto gaussianSigma = 1.2f;
     auto gaussianSize = 2 * (int)(gaussianSigma * 3) + 1;
     const auto gaussianPatch = filters::Gaussian::data2d(gaussianSigma, gaussianSize);
@@ -71,5 +65,5 @@ void l3() {
     });
     auto imageHarris = harris.apply(borders::BORDER_REFLECT).addPointsToImage();
     utils::render("harris", imageHarris);
-    utils::save("../examples/lr3/harrisclassic", imageHarris);
+    utils::save("../examples/lr3/harrisclassic", imageHarris);*/
 }

@@ -29,8 +29,9 @@ pyramids::Octave::Octave(const Img& img, size_t numLayers,
     , _numLayers(numLayers)
     , _sigmaDelta(sigmaDelta)
 {
-    filters::Gaussian gaussian(_sigmaDelta(sigmaPrev, sigmaNext));
-    _layers.push_back({gaussian.apply(img, borders::BORDER_REFLECT), sigmaNext, sigmaNext});
+    _layers.push_back({filters::gaussian(img,
+                                         _sigmaDelta(sigmaPrev, sigmaNext),
+                                         borders::BORDER_REFLECT), sigmaNext, sigmaNext});
 }
 
 pi::pyramids::Octave pyramids::Octave::nextOctave() const {
@@ -49,9 +50,9 @@ pyramids::Octave& pyramids::Octave::createLayers() {
         auto sigma = _step * prevLayer.sigma;
         auto sigmaEffective = _step * prevLayer.sigmaEffective;
 
-        filters::Gaussian gaussian(_sigmaDelta(prevLayer.sigma, sigma));
-        _layers.push_back({gaussian.apply(prevLayer.img, borders::BORDER_REFLECT),
-                           sigma, sigmaEffective});
+        _layers.push_back({filters::gaussian(prevLayer.img,
+                                             _sigmaDelta(prevLayer.sigma, sigma),
+                                             borders::BORDER_REFLECT), sigma, sigmaEffective});
     }
 
     return *this;

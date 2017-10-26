@@ -165,10 +165,7 @@ detectors::DetectorHarris& detectors::DetectorHarris::apply(borders::BorderTypes
 void detectors::DetectorHarris::applyPatch(const Img& src, Img& dst, borders::BorderTypes border) {
     assert(_windowSize % 2 == 1);
 
-    filters::Sobel sobel;
-    auto pDerivativeX = sobel.applyX(src, border);
-    auto pDerivativeY = sobel.applyY(src, border);
-
+    auto pDerivatives = filters::sobel(src, border);
     auto fBorder = borders::Factory::get(border);
     auto hSize = _windowSize / 2;
 
@@ -180,8 +177,8 @@ void detectors::DetectorHarris::applyPatch(const Img& src, Img& dst, borders::Bo
                 for(auto kC = -hSize; kC <= hSize; kC++) {
                     auto w = _windowFunction(kR + hSize, kC + hSize);
 
-                    auto pIx = fBorder(row + kR, col + kC, pDerivativeX);
-                    auto pIy = fBorder(row + kR, col + kC, pDerivativeY);
+                    auto pIx = fBorder(row + kR, col + kC, pDerivatives.first);
+                    auto pIy = fBorder(row + kR, col + kC, pDerivatives.second);
 
                     A += w * pIx * pIx;
                     B += w * pIx * pIy;
