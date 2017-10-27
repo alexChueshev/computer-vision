@@ -2,133 +2,61 @@
 
 using namespace pi;
 
-/***********************
- * Detector methods
- ***********************/
-detectors::Detector::Detector(const Img& img)
-    : _img(img)
-{
-}
+namespace {
+    std::vector<detectors::Point> applyThreshold(const Img& src, int patchShift, float threshold,
+                                                 const borders::Function& fBorder) {
+        std::vector<detectors::Point> points;
 
-Img detectors::Detector::addPointsToImage() {
-    assert(_img.channels() == 1);
+        for(auto row = 0, height = src.height(); row < height; row++) {
+            for(auto col = 0, width = src.width(); col < width; col++) {
+                auto isMax = true;
+                const auto &pixel = *src.at(row, col);
 
-    //convert to 3 ch
-    Img tmp(_img.height(), _img.width(), 3);
+                if(pixel < threshold) continue;
 
-    auto* dataTmp = tmp.data();
-    auto* dataImg = _img.data();
-    auto channels = tmp.channels();
+                for(auto kR = -patchShift; kR <= patchShift && isMax; kR++) {
+                    for(auto kC = -patchShift; kC <= patchShift; kC++) {
+                        if(kR == 0 && kC == 0) continue; //only environs
 
-    for(auto i = 0, size = _img.dataSize(); i < size; i++) {
-        dataTmp[i * channels] = dataImg[i];
-        dataTmp[i * channels + 1] = dataImg[i];
-        dataTmp[i * channels + 2] = dataImg[i];
-    }
-
-    //add points to image
-    for(const auto &point : _points) {
-        auto* pixel = tmp.at(point.row, point.col);
-        *(pixel + 0) = .0f;
-        *(pixel + 1) = 1.0f;
-        *(pixel + 2) = 1.f; //yellow color
-    }
-
-    return tmp;
-}
-
-detectors::Detector& detectors::Detector::adaptNonMaximumSuppr(int points,
-                                                               const DistanceFunction& distanceFunction) {
-    auto radiusMax = std::hypot(_img.height(), _img.width()) / 2;
-
-    for(auto radius = 0; radius <= radiusMax && _points.size() > points; radius++) {
-        for(auto i = 0; i < _points.size(); i++) {
-            auto pointCur = _points[i];
-            _points.erase(std::remove_if(std::begin(_points) + i + 1, std::end(_points),
-                           [&distanceFunction, &radius, &pointCur](const Point& p) {
-                if(distanceFunction(pointCur.row, p.row, pointCur.col, p.col) < radius
-                        && pointCur.value * ADAPT_NM_SUPR_COEFFICIENT > p.value) {
-                    return true;
+                        if(pixel <= fBorder(row + kR, col + kC, src)) {
+                            isMax = false;
+                            break;
+                        };
+                    }
                 }
-                return false;
-            }), std::end(_points));
-        }
-    }
 
-    return *this;
-}
-
-const std::vector<detectors::Point>& detectors::Detector::points() const {
-    return _points;
-}
-
-Img detectors::Detector::image() const {
-    return _img;
-}
-
-void detectors::Detector::applyThreshold(const Img& src, borders::BorderTypes border) {
-    auto fBorder = borders::Factory::get(border);
-    _points.clear();
-
-    for(auto row = 0, height = src.height(); row < height; row++) {
-        for(auto col = 0, width = src.width(); col < width; col++) {
-            auto isMax = true;
-            const auto &pixel = *src.at(row, col);
-
-            if(pixel < THRESHOLD) continue;
-
-            for(auto kR = -PATCH_SHIFT; kR <= PATCH_SHIFT && isMax; kR++) {
-                for(auto kC = -PATCH_SHIFT; kC <= PATCH_SHIFT; kC++) {
-                    if(kR == 0 && kC == 0) continue; //only environs
-
-                    if(pixel <= fBorder(row + kR, col + kC, src)) {
-                        isMax = false;
-                        break;
-                    };
+                if(isMax) {
+                    points.push_back({row, col, pixel});
                 }
             }
-
-            if(isMax) {
-                _points.push_back({row, col, pixel});
-            }
         }
+
+        return points;
     }
 }
 
-/***********************
- * DetectorMoravec methods
- ***********************/
-detectors::DetectorMoravec::DetectorMoravec(const Img& img)
-    : Detector(img)
-    , _directions({ {{-1,-1}, {0,-1}, {1,-1}, {-1,0}, {1,1}, {1,0}, {-1,1}, {0,1}} })
-{
-}
+std::vector<detectors::Point> detectors::moravec(const Img& src, int patchSize, float threshold,
+                                                 borders::BorderTypes border) {
+    assert(src.channels() == 1);
+    assert(patchSize > 0 && patchSize % 2 == 1);
 
-detectors::DetectorMoravec& detectors::DetectorMoravec::apply(borders::BorderTypes border) {
-    assert(_img.channels() == 1);
-
-    Img dst(_img.height(), _img.width(), _img.channels());
-
-    this->applyPatch(_img, dst, border);
-    this->applyThreshold(dst, border);
-
-    return *this;
-}
-
-void detectors::DetectorMoravec::applyPatch(const Img& src, Img& dst, borders::BorderTypes border) {
+    auto patchShift = patchSize / 2;
     auto fBorder = borders::Factory::get(border);
+
+    Img dst(src.height(), src.width(), 1);
+    int directions[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0}, {1,1}, {1,0}, {-1,1}, {0,1}};
 
     for(auto row = 0, height = src.height(); row < height; row++) {
         for(auto col = 0, width = src.width(); col < width; col++) {
             auto errorMin = FLT_MAX;
 
-            for(const auto &direction : _directions) {
+            for(const auto &direction : directions) {
                 auto error = .0f;
 
-                for(auto kR = -PATCH_SHIFT; kR <= PATCH_SHIFT; kR++) {
-                    for(auto kC = -PATCH_SHIFT; kC <= PATCH_SHIFT; kC++) {
+                for(auto kR = -patchShift; kR <= patchShift; kR++) {
+                    for(auto kC = -patchShift; kC <= patchShift; kC++) {
                         auto value = fBorder(row + kR, col + kC, src)
-                                - fBorder(row + kR + direction.row, col + kC + direction.col, src);
+                                - fBorder(row + kR + direction[0], col + kC + direction[1], src);
                         error += value * value;
                     }
                 }
@@ -139,35 +67,24 @@ void detectors::DetectorMoravec::applyPatch(const Img& src, Img& dst, borders::B
             *dst.at(row, col) = errorMin;
         }
     }
+
+    return applyThreshold(dst, patchShift, threshold, fBorder);
 }
 
-/***********************
- * DetectorHarris methods
- ***********************/
-detectors::DetectorHarris::DetectorHarris(const Img& img, int windowSize, WindowFunction windowFunction)
-    : Detector(img)
-    , _windowSize(windowSize)
-    , _windowFunction(windowFunction)
-{
-}
+std::vector<detectors::Point> detectors::harris(const Img& src, int patchSize, float threshold,
+                                                float k, borders::BorderTypes border) {
+    assert(src.channels() == 1);
+    assert(patchSize > 0 && patchSize % 2 == 1);
 
-detectors::DetectorHarris& detectors::DetectorHarris::apply(borders::BorderTypes border) {
-    assert(_img.channels() == 1);
+    Img dst(src.height(), src.width(), 1);
 
-    Img dst(_img.height(), _img.width(), _img.channels());
-
-    this->applyPatch(_img, dst, border);
-    this->applyThreshold(dst, border);
-
-    return *this;
-}
-
-void detectors::DetectorHarris::applyPatch(const Img& src, Img& dst, borders::BorderTypes border) {
-    assert(_windowSize % 2 == 1);
-
-    auto pDerivatives = filters::sobel(src, border);
     auto fBorder = borders::Factory::get(border);
-    auto hSize = _windowSize / 2;
+    auto pDerivatives = filters::sobel(src, border);
+
+    auto sigma = std::log10(patchSize) * 2;
+    auto kernelSize = 2 * (int)(sigma * 3) + 1;
+    auto gaussian = kernels::gaussian2d(sigma, kernelSize);
+    auto hSize = kernelSize / 2;
 
     for(auto row = 0, height = src.height(); row < height; row++) {
         for(auto col = 0, width = src.width(); col < width; col++) {
@@ -175,7 +92,7 @@ void detectors::DetectorHarris::applyPatch(const Img& src, Img& dst, borders::Bo
 
             for(auto kR = -hSize; kR <= hSize; kR++) {
                 for(auto kC = -hSize; kC <= hSize; kC++) {
-                    auto w = _windowFunction(kR + hSize, kC + hSize);
+                    auto w = *gaussian.at(kR + hSize, kC + hSize);
 
                     auto pIx = fBorder(row + kR, col + kC, pDerivatives.first);
                     auto pIy = fBorder(row + kR, col + kC, pDerivatives.second);
@@ -185,7 +102,67 @@ void detectors::DetectorHarris::applyPatch(const Img& src, Img& dst, borders::Bo
                     C += w * pIy * pIy;
                 }
             }
-            *dst.at(row, col) = A * C - B * B - K * (A + C) * (A + C);
+            *dst.at(row, col) = A * C - B * B - k * (A + C) * (A + C);
         }
     }
+
+    return applyThreshold(dst, patchSize / 2, threshold, fBorder);
+}
+
+Img detectors::addPointsTo(const Img& src, const std::vector<Point>& points) {
+    assert(src.channels() == 1);
+
+    //convert to 3 ch
+    Img dst(src.height(), src.width(), 3);
+
+    auto* dataDst = dst.data();
+    auto* dataSrc = src.data();
+    auto channels = dst.channels();
+
+    for(auto i = 0, size = src.dataSize(); i < size; i++) {
+        dataDst[i * channels] = dataSrc[i];
+        dataDst[i * channels + 1] = dataSrc[i];
+        dataDst[i * channels + 2] = dataSrc[i];
+    }
+
+    //add points to image
+    for(const auto &point : points) {
+        auto* pixel = dst.at(point.row, point.col);
+        *(pixel + 0) = .0f;
+        *(pixel + 1) = 1.0f;
+        *(pixel + 2) = 1.f; //yellow color
+    }
+
+    return dst;
+}
+
+std::vector<detectors::Point> detectors::adaptiveNonMaximumSuppresion(const std::vector<Point>& points,
+                                                                      int quantity, float radiusMax,
+                                                                      const DistanceFunction& distanceFunction,
+                                                                      float coefficient) {
+    std::vector<Point> filtered(points);
+
+    for(auto radius = 0; radius <= radiusMax && filtered.size() > quantity; radius++) {
+        for(auto i = 0; i < filtered.size(); i++) {
+            auto point = filtered[i];
+            filtered.erase(std::remove_if(std::begin(filtered) + i + 1, std::end(filtered),
+                           [&distanceFunction, &radius, &point, &coefficient](const Point& p) {
+                if(distanceFunction(point.row, p.row, point.col, p.col) < radius
+                        && point.value * coefficient > p.value) {
+                    return true;
+                }
+                return false;
+            }), std::end(filtered));
+        }
+    }
+
+    return filtered;
+}
+
+float detectors::eulerDistance(int x1, int x2, int y1, int y2) {
+    return std::hypot((x1 - x2), (y1 - y2));
+}
+
+float detectors::maxRadius(const Img& img) {
+    return std::hypot(img.height(), img.width()) / 2;
 }

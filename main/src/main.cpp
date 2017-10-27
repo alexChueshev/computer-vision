@@ -14,8 +14,8 @@ void l3();
 
 int main() {
     //l1();
-    l2();
-    //l3();
+    //l2();
+    l3();
 
     return 0;
 }
@@ -46,25 +46,18 @@ void l2() {
 }
 
 void l3() {
-    /*ImageProcessing imageProcessing("/home/alexander/Lenna.png", utils::load);
-    imageProcessing.opts({opts::grayscale, opts::normalize});
+    auto image = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/Lenna.png")));
 
-    detectors::DetectorMoravec moravec(imageProcessing.image());
-    auto imageMoravec = moravec.apply(borders::BORDER_REFLECT)
-            .adaptNonMaximumSuppr(300, [](int x1, int x2, int y1, int y2) {
-        return std::hypot((x1 - x2), (y1 - y2));
-    }).addPointsToImage();
-    utils::render("moravec", imageMoravec);
-    utils::save("../examples/lr3/moravec300points", imageMoravec);
+    auto moravecImage = detectors::addPointsTo(image,
+                            detectors::adaptiveNonMaximumSuppresion(
+                                detectors::moravec(image), 300,
+                                detectors::maxRadius(image), detectors::eulerDistance));
+    utils::render("moravec", moravecImage);
+    utils::save("../examples/lr3/moravec300points", moravecImage);
 
-    auto gaussianSigma = 1.2f;
-    auto gaussianSize = 2 * (int)(gaussianSigma * 3) + 1;
-    const auto gaussianPatch = filters::Gaussian::data2d(gaussianSigma, gaussianSize);
-    detectors::DetectorHarris harris(imageProcessing.image(),gaussianSize,
-                                     [&gaussianPatch, &gaussianSize](int row, int col) {
-        return gaussianPatch[row * gaussianSize + col];
-    });
-    auto imageHarris = harris.apply(borders::BORDER_REFLECT).addPointsToImage();
-    utils::render("harris", imageHarris);
-    utils::save("../examples/lr3/harrisclassic", imageHarris);*/
+    auto harrisImage = detectors::addPointsTo(image, detectors::harris(image));
+    utils::render("harris", harrisImage);
+    utils::save("../examples/lr3/harrisclassic", harrisImage);
 }

@@ -7,8 +7,7 @@ Img filters::gaussian(const Img& src, float sigma, borders::BorderTypes border) 
     return convolve(convolve(src, kernels.first, border), kernels.second, border);
 }
 
-Img filters::sobel(const Img& src, borders::BorderTypes border,
-                   const std::function<Img(const Img&, const Img&)>& op) {
+Img filters::sobel(const Img& src, borders::BorderTypes border, const SobelFunction& op) {
     auto images = sobel(src, border);
     return op(images.first, images.second);
 }
