@@ -50,14 +50,14 @@ void l3() {
                     opts::grayscale(
                         utils::load("/home/alexander/Lenna.png")));
 
-    auto moravecImage = detectors::addPointsTo(image,
+    auto moravecImage = utils::addPointsTo(image,
                             detectors::adaptiveNonMaximumSuppresion(
                                 detectors::moravec(image), 300,
-                                detectors::maxRadius(image), detectors::eulerDistance));
+                                utils::radius(image), utils::eulerDistance));
     utils::render("moravec", moravecImage);
     utils::save("../examples/lr3/moravec300points", moravecImage);
 
-    auto harrisImage = detectors::addPointsTo(image, detectors::harris(image));
+    auto harrisImage = utils::addPointsTo(image, detectors::harris(image));
     utils::render("harris", harrisImage);
     utils::save("../examples/lr3/harrisclassic", harrisImage);
 }

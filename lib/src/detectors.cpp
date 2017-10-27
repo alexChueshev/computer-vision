@@ -109,33 +109,6 @@ std::vector<detectors::Point> detectors::harris(const Img& src, int patchSize, f
     return applyThreshold(dst, patchSize / 2, threshold, fBorder);
 }
 
-Img detectors::addPointsTo(const Img& src, const std::vector<Point>& points) {
-    assert(src.channels() == 1);
-
-    //convert to 3 ch
-    Img dst(src.height(), src.width(), 3);
-
-    auto* dataDst = dst.data();
-    auto* dataSrc = src.data();
-    auto channels = dst.channels();
-
-    for(auto i = 0, size = src.dataSize(); i < size; i++) {
-        dataDst[i * channels] = dataSrc[i];
-        dataDst[i * channels + 1] = dataSrc[i];
-        dataDst[i * channels + 2] = dataSrc[i];
-    }
-
-    //add points to image
-    for(const auto &point : points) {
-        auto* pixel = dst.at(point.row, point.col);
-        *(pixel + 0) = .0f;
-        *(pixel + 1) = 1.0f;
-        *(pixel + 2) = 1.f; //yellow color
-    }
-
-    return dst;
-}
-
 std::vector<detectors::Point> detectors::adaptiveNonMaximumSuppresion(const std::vector<Point>& points,
                                                                       int quantity, float radiusMax,
                                                                       const DistanceFunction& distanceFunction,
@@ -157,12 +130,4 @@ std::vector<detectors::Point> detectors::adaptiveNonMaximumSuppresion(const std:
     }
 
     return filtered;
-}
-
-float detectors::eulerDistance(int x1, int x2, int y1, int y2) {
-    return std::hypot((x1 - x2), (y1 - y2));
-}
-
-float detectors::maxRadius(const Img& img) {
-    return std::hypot(img.height(), img.width()) / 2;
 }

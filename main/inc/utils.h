@@ -5,7 +5,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <img.h>
+#include <detectors.h>
 
 #include <iomanip>
 #include <ctime>
@@ -17,7 +17,13 @@ namespace utils {
     void render(const std::string& window, const pi::Img& img);
 
     void save(const std::string& path, const pi::Img& img,
-              const std::string &ext = "png", bool addTime = true);
+              const std::string& ext = "png", bool addTime = true);
+
+    pi::Img addPointsTo(const pi::Img& src, const std::vector<pi::detectors::Point>& points);
+
+    float eulerDistance(int x1, int x2, int y1, int y2);
+
+    float radius(const pi::Img& img);
 }
 
 #endif // COMPUTER_VISION_UTILS_H

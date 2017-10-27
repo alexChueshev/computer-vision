@@ -21,12 +21,6 @@ namespace pi::detectors {
 
     std::vector<Point> adaptiveNonMaximumSuppresion(const std::vector<Point>& points, int quantity, float radiusMax,
                                                     const DistanceFunction& distanceFunction, float coefficient = .9f);
-
-    Img addPointsTo(const Img& src, const std::vector<Point>& points);
-
-    float eulerDistance(int x1, int x2, int y1, int y2);
-
-    float maxRadius(const Img& img);
 }
 
 struct pi::detectors::Point {

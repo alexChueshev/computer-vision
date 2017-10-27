@@ -58,3 +58,39 @@ void utils::save(const std::string &path, const pi::Img &img, const std::string 
 
     cv::imwrite(ss.str(), cv::Mat(dst.height(), dst.width(), type, dataDst));
 }
+
+pi::Img utils::addPointsTo(const pi::Img& src, const std::vector<pi::detectors::Point>& points) {
+    assert(src.channels() == 1);
+
+    //convert to 3 ch
+    pi::Img dst(src.height(), src.width(), 3);
+
+    auto* dataDst = dst.data();
+    auto* dataSrc = src.data();
+    auto channels = dst.channels();
+
+    for(auto i = 0, size = src.dataSize(); i < size; i++) {
+        dataDst[i * channels] = dataSrc[i];
+        dataDst[i * channels + 1] = dataSrc[i];
+        dataDst[i * channels + 2] = dataSrc[i];
+    }
+
+    //add points to image
+    for(const auto &point : points) {
+        auto* pixel = dst.at(point.row, point.col);
+        *(pixel + 0) = .0f;
+        *(pixel + 1) = 1.0f;
+        *(pixel + 2) = 1.f; //yellow color
+    }
+
+    return dst;
+}
+
+float utils::eulerDistance(int x1, int x2, int y1, int y2) {
+    return std::hypot((x1 - x2), (y1 - y2));
+}
+
+float utils::radius(const pi::Img& img)  {
+    auto dimension = std::min(img.height(), img.width());
+    return std::hypot(dimension, dimension) / 2;
+}
