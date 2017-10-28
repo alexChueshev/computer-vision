@@ -96,9 +96,9 @@ kernels::Kernel kernels::gaussian1d(float sigma, int size) {
         data[i + halfSize] = val;
     }
 
-    for(auto i = 0; i < size; i++) {
-        data[i] /= sum;
-    }
+    std::for_each(data, data + size, [&sum](float &elem) {
+        elem /= sum;
+    });
 
     return gaussian;
 }
@@ -123,9 +123,9 @@ kernels::Kernel kernels::gaussian2d(float sigma, int size) {
         }
     }
 
-    for(auto i = 0, count = size * size; i < count; i++) {
-        data[i] /= sum;
-    }
+    std::for_each(data, data + size * size, [&sum](float &elem) {
+        elem /= sum;
+    });
 
     return gaussian;
 }

@@ -4,6 +4,7 @@
 #include <borders.h>
 
 #include <cmath>
+#include <algorithm>
 
 namespace pi::kernels {
     class Kernel;
