@@ -1,9 +1,9 @@
-#include "detectors.h"
+#include <detectors.h>
 
 using namespace pi;
 
 namespace {
-    std::vector<detectors::Point> applyThreshold(const Img& src, int patchShift, float threshold,
+    std::vector<detectors::Point> extractPoints(const Img& src, int patchShift, float threshold,
                                                  const borders::Function& fBorder) {
         std::vector<detectors::Point> points;
 
@@ -68,7 +68,7 @@ std::vector<detectors::Point> detectors::moravec(const Img& src, int patchSize, 
         }
     }
 
-    return applyThreshold(dst, patchShift, threshold, fBorder);
+    return extractPoints(dst, patchShift, threshold, fBorder);
 }
 
 std::vector<detectors::Point> detectors::harris(const Img& src, int patchSize, float threshold,
@@ -106,7 +106,7 @@ std::vector<detectors::Point> detectors::harris(const Img& src, int patchSize, f
         }
     }
 
-    return applyThreshold(dst, patchSize / 2, threshold, fBorder);
+    return extractPoints(dst, patchSize / 2, threshold, fBorder);
 }
 
 std::vector<detectors::Point> detectors::adaptiveNonMaximumSuppresion(const std::vector<Point>& points,

@@ -1,5 +1,4 @@
 #include <pyramid.h>
-#include <detectors.h>
 
 #include <utils.h>
 
