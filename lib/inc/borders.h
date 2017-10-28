@@ -11,9 +11,9 @@ namespace pi::borders {
         BORDER_WRAP
     };
 
-    class Factory;
-
     typedef std::function<float(int, int, const Img&)> Function;
+
+    Function get(BorderTypes border);
 
     float constant(int row, int col, const Img& src);
 
@@ -23,11 +23,5 @@ namespace pi::borders {
 
     float wrap(int row, int col, const Img& src);
 }
-
-class pi::borders::Factory {
-
-public:
-    static Function get(BorderTypes border);
-};
 
 #endif //COMPUTER_VISION_BORDERS_H

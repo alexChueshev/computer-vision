@@ -41,7 +41,7 @@ std::vector<detectors::Point> detectors::moravec(const Img& src, int patchSize, 
     assert(patchSize > 0 && patchSize % 2 == 1);
 
     auto patchShift = patchSize / 2;
-    auto fBorder = borders::Factory::get(border);
+    auto fBorder = borders::get(border);
 
     Img dst(src.height(), src.width(), 1);
     int directions[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0}, {1,1}, {1,0}, {-1,1}, {0,1}};
@@ -78,7 +78,7 @@ std::vector<detectors::Point> detectors::harris(const Img& src, int patchSize, f
 
     Img dst(src.height(), src.width(), 1);
 
-    auto fBorder = borders::Factory::get(border);
+    auto fBorder = borders::get(border);
     auto pDerivatives = filters::sobel(src, border);
 
     auto sigma = std::log10(patchSize) * 2;

@@ -57,7 +57,7 @@ Img filters::phi(const Img& dx, const Img& dy) {
 Img filters::convolve(const Img& src, const kernels::Kernel& kernel, borders::BorderTypes border) {
     assert(src.channels() == 1);
 
-    auto fBorder = borders::Factory::get(border);
+    auto fBorder = borders::get(border);
     auto cPosX = kernel.width() / 2, cPosY = kernel.height() / 2;
 
     Img tmp(src.height(), src.width(), src.channels());

@@ -2,7 +2,7 @@
 
 using namespace pi;
 
-borders::Function borders::Factory::get(borders::BorderTypes border) {
+borders::Function borders::get(borders::BorderTypes border) {
     switch (border) {
         case BORDER_REPLICATE:
             return replicate;
