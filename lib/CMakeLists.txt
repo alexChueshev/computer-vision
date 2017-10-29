@@ -9,4 +9,5 @@ add_library(lib
         src/borders.cpp inc/borders.h
         src/img.cpp inc/img.h
         src/pyramid.cpp inc/pyramid.h
-        src/detectors.cpp inc/detectors.h)
+        src/detectors.cpp inc/detectors.h
+        src/descriptors.cpp inc/descriptors.h)
