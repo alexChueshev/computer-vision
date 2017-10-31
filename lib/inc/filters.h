@@ -14,7 +14,11 @@ namespace pi::filters {
 
     Img magnitude(const Img& dx, const Img& dy);
 
+    float magnitudeVal(float dx, float dy);
+
     Img phi(const Img& dx, const Img& dy);
+
+    float phiVal(float dx, float dy);
 
     Img convolve(const Img& src, const kernels::Kernel& kernel, borders::BorderTypes border);
 }

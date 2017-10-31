@@ -4,7 +4,6 @@ using namespace pi;
 
 kernels::Kernel::Kernel(int height, int width) {
     assert(width > 0 && height > 0);
-    assert(width % 2 == 1 && height % 2 == 1);
 
     _width = width;
     _height = height;
@@ -80,7 +79,6 @@ pi::kernels::Kernel kernels::Kernel::transpose() {
 
 kernels::Kernel kernels::gaussian1d(float sigma, int size) {
     assert(sigma > 0);
-    assert(size % 2 == 1);
 
     auto sum = 0.f;
     auto halfSize = size / 2;
@@ -89,11 +87,12 @@ kernels::Kernel kernels::gaussian1d(float sigma, int size) {
     kernels::Kernel gaussian(1, size);
     auto* data = gaussian.data();
 
-    for (auto i = -halfSize; i <= halfSize; i++) {
-        auto val = std::exp(-i * i / (2 * sigma * sigma)) / div;
+    for (auto i = 0; i < size; i++) {
+        auto ri = i - halfSize;
+        auto val = std::exp(-ri * ri / (2 * sigma * sigma)) / div;
 
         sum += val;
-        data[i + halfSize] = val;
+        data[i] = val;
     }
 
     std::for_each(data, data + size, [&sum](float &elem) {
@@ -105,7 +104,6 @@ kernels::Kernel kernels::gaussian1d(float sigma, int size) {
 
 kernels::Kernel kernels::gaussian2d(float sigma, int size) {
     assert(sigma > 0);
-    assert(size % 2 == 1);
 
     auto sum = 0.f;
     auto halfSize = size / 2;
@@ -114,12 +112,14 @@ kernels::Kernel kernels::gaussian2d(float sigma, int size) {
     kernels::Kernel gaussian(size, size);
     auto* data = gaussian.data();
 
-    for (auto i = -halfSize; i <= halfSize; i++) {
-        for(auto j = -halfSize; j <= halfSize; j++) {
-            auto val = std::exp(-(i * i + j * j) / (2 * sigma * sigma)) / div;
+    for (auto i = 0; i < size; i++) {
+        for(auto j = 0; j < size; j++) {
+            auto ri = i - halfSize;
+            auto rj = j - halfSize;
+            auto val = std::exp(-(ri * ri + rj * rj) / (2 * sigma * sigma)) / div;
 
             sum += val;
-            data[(i + halfSize) * size + (j + halfSize)] = val;
+            data[i * size + j] = val;
         }
     }
 

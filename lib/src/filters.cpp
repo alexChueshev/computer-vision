@@ -31,10 +31,14 @@ Img filters::magnitude(const Img& dx, const Img& dy) {
     auto* yData = dy.data();
 
     for(auto i = 0, size = dst.dataSize(); i < size; i++) {
-        data[i] = std::hypot(xData[i], yData[i]);
+        data[i] = magnitudeVal(xData[i], yData[i]);
     }
 
     return dst;
+}
+
+float filters::magnitudeVal(float dx, float dy) {
+    return std::hypot(dx, dy);
 }
 
 Img filters::phi(const Img& dx, const Img& dy) {
@@ -48,14 +52,20 @@ Img filters::phi(const Img& dx, const Img& dy) {
     auto* yData = dy.data();
 
     for(auto i = 0, size = dst.dataSize(); i < size; i++) {
-        data[i] = std::atan2(yData[i], xData[i]);
+        data[i] = phiVal(xData[i], yData[i]);
     }
 
     return dst;
 }
 
+float filters::phiVal(float dx, float dy) {
+    return std::atan2(dy, dx);
+}
+
 Img filters::convolve(const Img& src, const kernels::Kernel& kernel, borders::BorderTypes border) {
     assert(src.channels() == 1);
+    assert(kernel.height() % 2 == 1);
+    assert(kernel.width() % 2 == 1);
 
     auto fBorder = borders::get(border);
     auto cPosX = kernel.width() / 2, cPosY = kernel.height() / 2;
