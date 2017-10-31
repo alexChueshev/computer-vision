@@ -1,4 +1,5 @@
 #include <pyramid.h>
+#include <descriptors.h>
 
 #include <utils.h>
 
@@ -11,10 +12,13 @@ void l2();
 
 void l3();
 
+void l4();
+
 int main() {
     //l1();
     //l2();
-    l3();
+    //l3();
+    l4();
 
     return 0;
 }
@@ -59,4 +63,14 @@ void l3() {
     auto harrisImage = utils::addPointsTo(image, detectors::harris(image));
     utils::render("harris", harrisImage);
     utils::save("../examples/lr3/harrisclassic", harrisImage);
+}
+
+void l4() {
+    auto image = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/Lenna.png")));
+
+    descriptors::hog({1,1,1}, filters::sobel(image, borders::BORDER_REFLECT));
+    /*descriptors::asDescriptors(std::vector<detectors::Point>(), [](int a) {
+    }, 2);*/
 }
