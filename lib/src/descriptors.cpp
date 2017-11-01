@@ -82,6 +82,17 @@ descriptors::Descriptor descriptors::normalize(const Descriptor& descriptor) {
     return normalized;
 }
 
+descriptors::Descriptor descriptors::trim(const Descriptor& descriptor, float threshold) {
+    Descriptor trimmed(descriptor.point, descriptor.size);
+
+    std::transform(descriptor.data.get(), descriptor.data.get() + descriptor.size, trimmed.data.get(),
+                   [&threshold] (float value) {
+        return std::min(value, threshold);
+    });
+
+    return trimmed;
+}
+
 template<typename Functor, typename ...Args>
 std::vector<descriptors::Descriptor> descriptors::asDescriptors(const std::vector<detectors::Point>& points,
                                                                 Functor&& func, Args&&... args) {
