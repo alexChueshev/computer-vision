@@ -3,15 +3,17 @@
 
 #include <detectors.h>
 
+#include <numeric>
+
 namespace pi::descriptors {
     struct Descriptor;
 
     Descriptor hog(const detectors::Point& point, const std::pair<Img, Img>& sobel, int histoSize = 4,
                    int blockSize = 16, int bins = 8, borders::BorderTypes border = borders::BORDER_REPLICATE);
 
-    std::vector<Descriptor> normalize(const std::vector<Descriptor>& descriptors);
+    Descriptor normalize(const Descriptor& descriptor);
 
-    std::vector<Descriptor> trim(const std::vector<Descriptor>& descriptors, float threshold = .2f);
+    Descriptor trim(const Descriptor& descriptor, float threshold = .2f);
 
     template<typename Functor, typename ...Args>
     std::vector<Descriptor> asDescriptors(const std::vector<detectors::Point>& points,

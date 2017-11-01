@@ -65,6 +65,23 @@ descriptors::Descriptor descriptors::hog(const detectors::Point& point, const st
     return descriptor;
 }
 
+descriptors::Descriptor descriptors::normalize(const Descriptor& descriptor) {
+    Descriptor normalized(descriptor.point, descriptor.size);
+
+    auto denominator = std::sqrt(
+                            std::accumulate(descriptor.data.get(), descriptor.data.get() + descriptor.size, 0,
+                                       [] (float accumulator, float value) {
+        return accumulator + value * value;
+    }));
+
+    std::transform(descriptor.data.get(), descriptor.data.get() + descriptor.size, normalized.data.get(),
+                   [&denominator] (float value) {
+        return value / denominator;
+    });
+
+    return normalized;
+}
+
 template<typename Functor, typename ...Args>
 std::vector<descriptors::Descriptor> descriptors::asDescriptors(const std::vector<detectors::Point>& points,
                                                                 Functor&& func, Args&&... args) {
