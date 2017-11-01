@@ -52,12 +52,13 @@ descriptors::Descriptor descriptors::hog(const detectors::Point& point, const st
                         fBorder(rI, rC, sobel.first),
                         fBorder(rI, rC, sobel.second)) + M_PI;
 
-            auto histoNum = row / histoSize * histoNums + col / histoSize;
-            auto lBin = ((int) (phi / bandwidth)) % bins;
-            auto rProportion = (phi - bandwidth * lBin) / bandwidth;
+            auto clbin = (phi / bandwidth) - .5f;
+            auto distance = phi - bandwidth * (std::floor(clbin) + std::copysignf(.5f, clbin));
+            auto lbin = clbin < 1e-6 ? bins - 1 : (int) floor(clbin);
 
-            descriptor.data[histoNum * bins + lBin] += (1 - rProportion) * magnitudeVal;
-            descriptor.data[histoNum * bins + (lBin + 1) % bins] += rProportion * magnitudeVal;
+            auto histoNum = row / histoSize * histoNums + col / histoSize;
+            descriptor.data[histoNum * bins + lbin] += (1 - distance / bandwidth) * magnitudeVal;
+            descriptor.data[histoNum * bins + (lbin + 1) % bins] += distance / bandwidth * magnitudeVal;
         }
     }
 
