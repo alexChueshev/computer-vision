@@ -3,16 +3,16 @@
 using namespace pi;
 
 descriptors::Descriptor::Descriptor(detectors::Point point, int size)
-    : point(std::move(point))
-    , size(size)
+    : size(size)
+    , point(std::move(point))
     , data(std::make_unique<float[]>(size))
 {
     std::fill(data.get(), data.get() + size, 0);
 }
 
 descriptors::Descriptor::Descriptor(const descriptors::Descriptor& descriptor)
-    : point(descriptor.point)
-    , size(descriptor.size)
+    : size(descriptor.size)
+    , point(descriptor.point)
     , data(std::make_unique<float[]>(size))
 {
     std::copy(descriptor.data.get(), descriptor.data.get() + size, data.get());
@@ -68,15 +68,15 @@ descriptors::Descriptor descriptors::hog(const detectors::Point& point, const st
 descriptors::Descriptor descriptors::normalize(const Descriptor& descriptor) {
     Descriptor normalized(descriptor.point, descriptor.size);
 
-    auto denominator = std::sqrt(
+    auto hAccumulator = std::sqrt(
                             std::accumulate(descriptor.data.get(), descriptor.data.get() + descriptor.size, 0,
                                        [] (float accumulator, float value) {
         return accumulator + value * value;
     }));
 
     std::transform(descriptor.data.get(), descriptor.data.get() + descriptor.size, normalized.data.get(),
-                   [&denominator] (float value) {
-        return value / denominator;
+                   [&hAccumulator ] (float value) {
+        return value / hAccumulator;
     });
 
     return normalized;
@@ -91,6 +91,17 @@ descriptors::Descriptor descriptors::trim(const Descriptor& descriptor, float th
     });
 
     return trimmed;
+}
+
+float descriptors::distance(const Descriptor& descriptor1, const Descriptor& descriptor2) {
+    assert(descriptor1.size == descriptor2.size);
+
+    auto distance = .0f;
+    for(auto i = 0; i < descriptor1.size; i++) {
+        distance += std::pow(descriptor1.data[i] - descriptor2.data[i], 2);
+    }
+
+    return std::sqrt(distance);
 }
 
 template<typename Functor, typename ...Args>

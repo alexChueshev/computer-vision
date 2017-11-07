@@ -15,14 +15,16 @@ namespace pi::descriptors {
 
     Descriptor trim(const Descriptor& descriptor, float threshold = .2f);
 
+    float distance(const Descriptor& descriptor1, const Descriptor& descriptor2);
+
     template<typename Functor, typename ...Args>
     std::vector<Descriptor> asDescriptors(const std::vector<detectors::Point>& points,
                                           Functor&& func, Args&&... args);
 }
 
 struct pi::descriptors::Descriptor {
-    detectors::Point point;
     int size;
+    detectors::Point point;
     std::unique_ptr<float[]> data;
 
     Descriptor() = default;
