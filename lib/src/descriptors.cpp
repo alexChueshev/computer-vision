@@ -104,11 +104,11 @@ float descriptors::distance(const Descriptor& descriptor1, const Descriptor& des
     return std::sqrt(distance);
 }
 
-std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descriptors::similar(
+std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descriptors::match(
                                                                             const std::vector<Descriptor>& descriptors1,
                                                                             const std::vector<Descriptor>& descriptors2,
                                                                             float threshold) {
-    std::vector<std::pair<Descriptor, Descriptor>> similar;
+    std::vector<std::pair<Descriptor, Descriptor>> matches;
 
     for(const auto &descriptor1 : descriptors1) {
         auto minDistance1 = FLT_MAX, minDistance2 = FLT_MAX;
@@ -127,9 +127,9 @@ std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descrip
         }
 
         if(minDistance1 / minDistance2 <= threshold) {
-            similar.push_back(std::pair<Descriptor, Descriptor>(descriptor1, descriptors2[index]));
+            matches.push_back(std::pair<Descriptor, Descriptor>(descriptor1, descriptors2[index]));
         }
     }
 
-    return similar;
+    return matches;
 }
