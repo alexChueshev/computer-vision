@@ -17,6 +17,10 @@ namespace pi::descriptors {
 
     float distance(const Descriptor& descriptor1, const Descriptor& descriptor2);
 
+    std::vector<std::pair<Descriptor, Descriptor>> similar(const std::vector<Descriptor>& descriptors1,
+                                                           const std::vector<Descriptor>& descriptors2,
+                                                           float threshold = .8f);
+
     template<typename Functor, typename ...Args>
     std::vector<Descriptor> asDescriptors(const std::vector<detectors::Point>& points,
                                           Functor&& func, Args&&... args);
