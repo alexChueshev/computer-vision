@@ -76,15 +76,15 @@ void l4() {
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
+                        utils::load("/home/alexander/LennaCut.png")));
 
-    auto descriptors1 = descriptors::asDescriptors(detectors::harris(image1),
-                                                   descriptors::hog, normalize,
-                                                   filters::sobel(image1, borders::BORDER_REFLECT),
-                                                   4, 16, 8, borders::BORDER_REFLECT);
-
-    auto descriptors2 = descriptors::asDescriptors(detectors::harris(image1),
-                                                   descriptors::hog, normalize,
-                                                   filters::sobel(image2, borders::BORDER_REFLECT),
-                                                   4, 16, 8, borders::BORDER_REFLECT);
+    utils::render("test", utils::drawMatches(image1, image2,
+                                             descriptors::match(descriptors::asDescriptors(detectors::harris(image1),
+                                                                 descriptors::hog, normalize,
+                                                                 filters::sobel(image1, borders::BORDER_REFLECT),
+                                                                 4, 16, 8, borders::BORDER_REFLECT),
+                                                                descriptors::asDescriptors(detectors::harris(image1),
+                                                                 descriptors::hog, normalize,
+                                                                 filters::sobel(image2, borders::BORDER_REFLECT),
+                                                                 4, 16, 8, borders::BORDER_REFLECT))));
 }
