@@ -110,11 +110,11 @@ std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descrip
                                                                             float threshold) {
     std::vector<std::pair<Descriptor, Descriptor>> similar;
 
-    for(const Descriptor& descriptor1 : descriptors1) {
+    for(const auto &descriptor1 : descriptors1) {
         auto minDistance1 = FLT_MAX, minDistance2 = FLT_MAX;
         auto index = 0, counter = 0;
 
-        for(const Descriptor& descriptor2 : descriptors2) {
+        for(const auto &descriptor2 : descriptors2) {
             auto distance = descriptors::distance(descriptor1, descriptor2);
             if(distance < minDistance1) {
                 minDistance2 = minDistance1;
@@ -132,16 +132,4 @@ std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descrip
     }
 
     return similar;
-}
-
-template<typename Functor, typename ...Args>
-std::vector<descriptors::Descriptor> descriptors::asDescriptors(const std::vector<detectors::Point>& points,
-                                                                Functor&& func, Args&&... args) {
-    std::vector<Descriptor> descriptors(points.size());
-
-    for(const auto &point : points) {
-        func(point, std::forward(args)...);
-    }
-
-    return descriptors;
 }

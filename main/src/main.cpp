@@ -66,11 +66,25 @@ void l3() {
 }
 
 void l4() {
-    auto image = opts::normalize(
+    auto normalize = [](const descriptors::Descriptor& descriptor) {
+        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
+    };
+
+    auto image1 = opts::normalize(
                     opts::grayscale(
                         utils::load("/home/alexander/Lenna.png")));
 
-    descriptors::hog({1,1,1}, filters::sobel(image, borders::BORDER_REFLECT));
-    /*descriptors::asDescriptors(std::vector<detectors::Point>(), [](int a) {
-    }, 2);*/
+    auto image2 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/Lenna.png")));
+
+    auto descriptors1 = descriptors::asDescriptors(detectors::harris(image1),
+                                                   descriptors::hog, normalize,
+                                                   filters::sobel(image1, borders::BORDER_REFLECT),
+                                                   4, 16, 8, borders::BORDER_REFLECT);
+
+    auto descriptors2 = descriptors::asDescriptors(detectors::harris(image1),
+                                                   descriptors::hog, normalize,
+                                                   filters::sobel(image2, borders::BORDER_REFLECT),
+                                                   4, 16, 8, borders::BORDER_REFLECT);
 }

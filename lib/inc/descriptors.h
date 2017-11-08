@@ -21,9 +21,18 @@ namespace pi::descriptors {
                                                            const std::vector<Descriptor>& descriptors2,
                                                            float threshold = .8f);
 
-    template<typename Functor, typename ...Args>
+    template<typename FunctorOp, typename FunctorNorm, typename ...Args>
     std::vector<Descriptor> asDescriptors(const std::vector<detectors::Point>& points,
-                                          Functor&& func, Args&&... args);
+                                          FunctorOp&& op, FunctorNorm&& norm, Args&&... args) {
+        std::vector<Descriptor> descriptors;
+        descriptors.reserve(points.size());
+
+        for(const auto &point : points) {
+            descriptors.push_back(norm(op(point, std::forward<Args>(args)...)));
+        }
+
+        return descriptors;
+    }
 }
 
 struct pi::descriptors::Descriptor {
