@@ -86,7 +86,7 @@ pi::Img utils::addPointsTo(const pi::Img& src, const std::vector<pi::detectors::
     return dst;
 }
 
-float utils::eulerDistance(int x1, int x2, int y1, int y2) {
+float utils::euclidDistance(int x1, int x2, int y1, int y2) {
     return std::hypot((x1 - x2), (y1 - y2));
 }
 

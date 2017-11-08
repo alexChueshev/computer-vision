@@ -56,7 +56,7 @@ void l3() {
     auto moravecImage = utils::addPointsTo(image,
                             detectors::adaptiveNonMaximumSuppresion(
                                 detectors::moravec(image), 300,
-                                utils::radius(image), utils::eulerDistance));
+                                utils::radius(image), utils::euclidDistance));
     utils::render("moravec", moravecImage);
     utils::save("../examples/lr3/moravec300points", moravecImage);
 
