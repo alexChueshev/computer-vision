@@ -6,7 +6,7 @@ Img utils::load(const std::string& path) {
     cv::Mat src = cv::imread(path, cv::IMREAD_COLOR);
     assert(src.type() == CV_8UC3);
 
-    pi::Img img(src.rows, src.cols, src.channels());
+    Img img(src.rows, src.cols, src.channels());
 
     auto* data = img.data();
     auto step = img.step();
@@ -35,7 +35,13 @@ void utils::render(const std::string& window, const cv::Mat& img) {
     cv::waitKey(0);
 }
 
-void utils::save(const std::string& path, const pi::Img& img, const std::string& ext, bool addTime) {
+void utils::save(const std::string& path, const Img& img, const std::string& ext, bool addTime) {
+    assert(img.channels() == 1 || img.channels() == 3);
+
+    utils::save(path, convertToMat(img), ext, addTime);
+}
+
+void utils::save(const std::string& path, const cv::Mat& img, const std::string& ext, bool addTime) {
     assert(img.channels() == 1 || img.channels() == 3);
 
     std::stringstream ss;
@@ -49,17 +55,9 @@ void utils::save(const std::string& path, const pi::Img& img, const std::string&
     ss << "." << ext;
     std::string s = ss.str();
 
-    pi::Img dst(img.height(), img.width(), img.channels());
-
-    auto* dataSrc = img.data();
-    auto* dataDst = dst.data();
-    auto type = img.channels() == 1 ? CV_32FC1 : CV_32FC3;
-
-    for(auto i = 0, size = img.dataSize(); i < size; i++) {
-        dataDst[i] = 255 * dataSrc[i];
-    }
-
-    cv::imwrite(ss.str(), cv::Mat(dst.height(), dst.width(), type, dataDst));
+    cv::Mat saved;
+    img.convertTo(saved, CV_8U, 255);
+    cv::imwrite(ss.str(), saved);
 }
 
 cv::Mat utils::convertToMat(const Img& src) {

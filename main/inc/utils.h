@@ -22,6 +22,9 @@ namespace utils {
     void save(const std::string& path, const pi::Img& img,
               const std::string& ext = "png", bool addTime = true);
 
+    void save(const std::string& path, const cv::Mat& img,
+              const std::string& ext = "png", bool addTime = true);
+
     cv::Mat convertToMat(const pi::Img& src);
 
     cv::Mat drawMatches(const pi::Img& src1, const pi::Img& src2, const std::vector<std::pair<
