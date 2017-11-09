@@ -21,6 +21,8 @@ namespace pi::descriptors {
                                                            const std::vector<Descriptor>& descriptors2,
                                                            float threshold = .7f);
 
+    std::vector<int> peaks(const Descriptor& descriptor, float threshold = .8f, int nums = 2);
+
     template<typename FunctorOp, typename FunctorNorm, typename ...Args>
     std::vector<Descriptor> asDescriptors(const std::vector<detectors::Point>& points,
                                           FunctorOp&& op, FunctorNorm&& norm, Args&&... args) {

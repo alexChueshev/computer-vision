@@ -133,3 +133,18 @@ std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descrip
 
     return matches;
 }
+
+std::vector<int> descriptors::peaks(const Descriptor& descriptor, float threshold, int nums) {
+    std::vector<int> positions;
+
+    auto maxValue = std::max_element(descriptor.data.get(), descriptor.data.get() + descriptor.size);
+    positions.push_back(std::distance(descriptor.data.get(), maxValue));
+
+    for(auto i = 0; i < descriptor.size && i < nums; i++) {
+        if(descriptor.data[i] >= *maxValue * threshold) {
+            positions.push_back(i);
+        }
+    }
+
+    return positions;
+}
