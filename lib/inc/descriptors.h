@@ -19,7 +19,7 @@ namespace pi::descriptors {
 
     std::vector<std::pair<Descriptor, Descriptor>> match(const std::vector<Descriptor>& descriptors1,
                                                            const std::vector<Descriptor>& descriptors2,
-                                                           float threshold = .8f);
+                                                           float threshold = .7f);
 
     template<typename FunctorOp, typename FunctorNorm, typename ...Args>
     std::vector<Descriptor> asDescriptors(const std::vector<detectors::Point>& points,

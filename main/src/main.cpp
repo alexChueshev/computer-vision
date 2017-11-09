@@ -76,15 +76,17 @@ void l4() {
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("/home/alexander/LennaCut.png")));
+                        utils::load("/home/alexander/Lenna.png")));
 
-    utils::render("test", utils::drawMatches(image1, image2,
-                                             descriptors::match(descriptors::asDescriptors(detectors::harris(image1),
-                                                                 descriptors::hog, normalize,
-                                                                 filters::sobel(image1, borders::BORDER_REFLECT),
-                                                                 4, 16, 8, borders::BORDER_REFLECT),
-                                                                descriptors::asDescriptors(detectors::harris(image1),
+    auto matchImage = utils::drawMatches(image2, image1,
+                                         descriptors::match(descriptors::asDescriptors(detectors::harris(image2),
                                                                  descriptors::hog, normalize,
                                                                  filters::sobel(image2, borders::BORDER_REFLECT),
-                                                                 4, 16, 8, borders::BORDER_REFLECT))));
+                                                                 4, 16, 8, borders::BORDER_REFLECT),
+                                                            descriptors::asDescriptors(detectors::harris(image1),
+                                                                 descriptors::hog, normalize,
+                                                                 filters::sobel(image1, borders::BORDER_REFLECT),
+                                                                 4, 16, 8, borders::BORDER_REFLECT)));
+    utils::render("matches", matchImage);
+    utils::save("../examples/lr4/matches", matchImage);
 }

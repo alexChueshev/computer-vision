@@ -54,7 +54,7 @@ descriptors::Descriptor descriptors::hog(const detectors::Point& point, const st
 
             auto clbin = (phi / bandwidth) - .5f;
             auto distance = phi - bandwidth * (std::floor(clbin) + std::copysignf(.5f, clbin));
-            auto lbin = clbin < 1e-6 ? bins - 1 : (int) floor(clbin);
+            auto lbin = clbin < 1e-8 ? bins - 1 : (int) floor(clbin);
 
             auto histoNum = row / histoSize * histoNums + col / histoSize;
             descriptor.data[histoNum * bins + lbin] += (1 - distance / bandwidth) * magnitudeVal;
@@ -69,7 +69,7 @@ descriptors::Descriptor descriptors::normalize(const Descriptor& descriptor) {
     Descriptor normalized(descriptor.point, descriptor.size);
 
     auto hAccumulator = std::sqrt(
-                            std::accumulate(descriptor.data.get(), descriptor.data.get() + descriptor.size, 0,
+                            std::accumulate(descriptor.data.get(), descriptor.data.get() + descriptor.size, .0f,
                                        [] (float accumulator, float value) {
         return accumulator + value * value;
     }));
