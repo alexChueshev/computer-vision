@@ -30,7 +30,8 @@ descriptors::Descriptor& descriptors::Descriptor::operator=(const descriptors::D
 }
 
 descriptors::Descriptor descriptors::hog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                         int histoSize, int blockSize, int bins, borders::BorderTypes border) {
+                                         float angle, int histoSize, int blockSize,
+                                         int bins, borders::BorderTypes border) {
     assert(blockSize % histoSize == 0);
 
     auto bandwidth = 2 * M_PI / bins;
@@ -65,6 +66,39 @@ descriptors::Descriptor descriptors::hog(const detectors::Point& point, const st
     return descriptor;
 }
 
+std::vector<descriptors::Descriptor> descriptors::hog(const std::vector<detectors::Point>& points,
+                                                      const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
+                                                      int histoSize, int blockSize, int bins, borders::BorderTypes border) {
+    std::vector<Descriptor> descriptors;
+    descriptors.reserve(points.size());
+
+    for(const auto &point : points) {
+        descriptors.push_back(norm(hog(point, sobel, .0f, histoSize, blockSize, bins, border)));
+    }
+
+    return descriptors;
+}
+
+std::vector<descriptors::Descriptor> descriptors::rhog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+                                                       const NormalizeFunction& norm, int histoSize, int blockSize,
+                                                       int bins, borders::BorderTypes border) {
+    assert(blockSize % histoSize == 0);
+
+    auto fitting = [](float l, float p0, float r) {
+        return 0;
+    };
+
+    std::vector<Descriptor> descriptors;
+    auto base = hog(point, sobel, .0f, blockSize, blockSize, bins, border);
+    auto peaksIndexes = peaks(base, .8f, 2);
+
+    for(auto index : peaksIndexes) {
+        descriptors.push_back(hog(point, sobel, fitting(0,0,0), histoSize, blockSize, bins, border));
+    }
+
+    return descriptors;
+}
+
 descriptors::Descriptor descriptors::normalize(const Descriptor& descriptor) {
     Descriptor normalized(descriptor.point, descriptor.size);
 
@@ -91,6 +125,21 @@ descriptors::Descriptor descriptors::trim(const Descriptor& descriptor, float th
     });
 
     return trimmed;
+}
+
+std::vector<int> descriptors::peaks(const Descriptor& descriptor, float threshold, int nums) {
+    std::vector<int> positions;
+
+    auto maxValue = std::max_element(descriptor.data.get(), descriptor.data.get() + descriptor.size);
+    positions.push_back(std::distance(descriptor.data.get(), maxValue));
+
+    for(auto i = 0; i < descriptor.size && positions.size() < nums; i++) {
+        if(descriptor.data[i] >= *maxValue * threshold) {
+            positions.push_back(i);
+        }
+    }
+
+    return positions;
 }
 
 float descriptors::distance(const Descriptor& descriptor1, const Descriptor& descriptor2) {
@@ -132,19 +181,4 @@ std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descrip
     }
 
     return matches;
-}
-
-std::vector<int> descriptors::peaks(const Descriptor& descriptor, float threshold, int nums) {
-    std::vector<int> positions;
-
-    auto maxValue = std::max_element(descriptor.data.get(), descriptor.data.get() + descriptor.size);
-    positions.push_back(std::distance(descriptor.data.get(), maxValue));
-
-    for(auto i = 0; i < descriptor.size && i < nums; i++) {
-        if(descriptor.data[i] >= *maxValue * threshold) {
-            positions.push_back(i);
-        }
-    }
-
-    return positions;
 }

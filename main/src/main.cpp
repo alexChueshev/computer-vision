@@ -4,7 +4,6 @@
 #include <utils.h>
 
 using namespace pi;
-using namespace std::placeholders;
 
 void l1();
 
@@ -14,11 +13,14 @@ void l3();
 
 void l4();
 
+void l5();
+
 int main() {
     //l1();
     //l2();
     //l3();
-    l4();
+    //l4();
+    l5();
 
     return 0;
 }
@@ -79,14 +81,15 @@ void l4() {
                         utils::load("/home/alexander/Lenna.png")));
 
     auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match(descriptors::asDescriptors(detectors::harris(image2),
-                                                                 descriptors::hog, normalize,
+                                         descriptors::match(descriptors::hog(detectors::harris(image2),
                                                                  filters::sobel(image2, borders::BORDER_REFLECT),
-                                                                 4, 16, 8, borders::BORDER_REFLECT),
-                                                            descriptors::asDescriptors(detectors::harris(image1),
-                                                                 descriptors::hog, normalize,
+                                                                 normalize),
+                                                            descriptors::hog(detectors::harris(image1),
                                                                  filters::sobel(image1, borders::BORDER_REFLECT),
-                                                                 4, 16, 8, borders::BORDER_REFLECT)));
+                                                                 normalize)));
     utils::render("matches", matchImage);
     utils::save("../examples/lr4/matches", matchImage);
+}
+
+void l5() {
 }

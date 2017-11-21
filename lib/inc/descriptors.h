@@ -8,8 +8,23 @@
 namespace pi::descriptors {
     struct Descriptor;
 
-    Descriptor hog(const detectors::Point& point, const std::pair<Img, Img>& sobel, int histoSize = 4,
-                   int blockSize = 16, int bins = 8, borders::BorderTypes border = borders::BORDER_REPLICATE);
+    typedef std::function<Descriptor(const Descriptor&)> NormalizeFunction;
+
+    Descriptor hog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+                   float angle = .0f, int histoSize = 4, int blockSize = 16, int bins = 8,
+                   borders::BorderTypes border = borders::BORDER_REPLICATE);
+
+    std::vector<Descriptor> hog(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
+                                const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16, int bins = 8,
+                                borders::BorderTypes border = borders::BORDER_REPLICATE);
+
+    std::vector<Descriptor> rhog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+                                 const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16,
+                                 int bins = 36, borders::BorderTypes border = borders::BORDER_REPLICATE);
+
+    std::vector<Descriptor> rhog(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
+                                 const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16,
+                                 int bins = 36, borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     Descriptor normalize(const Descriptor& descriptor);
 
@@ -18,23 +33,10 @@ namespace pi::descriptors {
     float distance(const Descriptor& descriptor1, const Descriptor& descriptor2);
 
     std::vector<std::pair<Descriptor, Descriptor>> match(const std::vector<Descriptor>& descriptors1,
-                                                           const std::vector<Descriptor>& descriptors2,
-                                                           float threshold = .7f);
+                                                         const std::vector<Descriptor>& descriptors2,
+                                                         float threshold = .7f);
 
     std::vector<int> peaks(const Descriptor& descriptor, float threshold = .8f, int nums = 2);
-
-    template<typename FunctorOp, typename FunctorNorm, typename ...Args>
-    std::vector<Descriptor> asDescriptors(const std::vector<detectors::Point>& points,
-                                          FunctorOp&& op, FunctorNorm&& norm, Args&&... args) {
-        std::vector<Descriptor> descriptors;
-        descriptors.reserve(points.size());
-
-        for(const auto &point : points) {
-            descriptors.push_back(norm(op(point, std::forward<Args>(args)...)));
-        }
-
-        return descriptors;
-    }
 }
 
 struct pi::descriptors::Descriptor {
