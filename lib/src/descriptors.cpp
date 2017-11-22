@@ -80,20 +80,39 @@ std::vector<descriptors::Descriptor> descriptors::hog(const std::vector<detector
 }
 
 std::vector<descriptors::Descriptor> descriptors::rhog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                                       const NormalizeFunction& norm, int histoSize, int blockSize,
-                                                       int bins, borders::BorderTypes border) {
+                                                       int histoSize, int blockSize, int bins,
+                                                       borders::BorderTypes border) {
     assert(blockSize % histoSize == 0);
 
-    auto fitting = [](float l, float p0, float r) {
-        return 0;
+    auto parabolic3bfit = [](const Descriptor& descriptor, int peak) {
+        auto ym1 = descriptor.data[(peak - 1) % descriptor.size];
+        auto y0 = descriptor.data[peak];
+        auto yp1 = descriptor.data[(peak + 1) % descriptor.size];
+        return peak + (ym1 - yp1) / (2 * (ym1 - 2 * y0 + yp1));
     };
 
     std::vector<Descriptor> descriptors;
-    auto base = hog(point, sobel, .0f, blockSize, blockSize, bins, border);
+    auto base = hog(point, sobel, .0f, blockSize, blockSize, 36, border);
     auto peaksIndexes = peaks(base, .8f, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.push_back(hog(point, sobel, fitting(0,0,0), histoSize, blockSize, bins, border));
+        descriptors.push_back(hog(point, sobel, parabolic3bfit(base, index) * 2 * M_PI / bins, histoSize,
+                                  blockSize, bins, border));
+    }
+
+    return descriptors;
+}
+
+std::vector<descriptors::Descriptor> descriptors::rhog(const std::vector<detectors::Point>& points,
+                                                       const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
+                                                       int histoSize, int blockSize, int bins, borders::BorderTypes border) {
+    std::vector<Descriptor> descriptors;
+    descriptors.reserve(points.size());
+
+    for(const auto &point : points) {
+        for(const auto &unnormalized : rhog(point, sobel, histoSize, blockSize, bins, border)) {
+            descriptors.push_back(norm(unnormalized));
+        }
     }
 
     return descriptors;
