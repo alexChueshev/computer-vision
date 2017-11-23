@@ -45,7 +45,7 @@ float borders::replicate(int row, int col, const Img& src) {
 float borders::reflect(int row, int col, const Img& src) {
     assert(src.channels() == 1);
 
-    std::function<int(int, int)> range = [](int dimension, int pos){
+    auto range = [](int dimension, int pos){
         if(pos < 0) return -pos;
         if(pos >= dimension) return 2 * dimension - pos - 2;
         return pos;

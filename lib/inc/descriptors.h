@@ -15,16 +15,16 @@ namespace pi::descriptors {
                    borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Descriptor> histogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
-                                const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16, int bins = 8,
-                                borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                      const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16, int bins = 8,
+                                      borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Descriptor> rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                 int histoSize = 4, int blockSize = 16, int bins = 8,
-                                 borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       int histoSize = 4, int blockSize = 16, int bins = 8,
+                                       borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Descriptor> rhistogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
-                                 const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16,
-                                 int bins = 8, borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16,
+                                       int bins = 8, borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     Descriptor normalize(const Descriptor& descriptor);
 

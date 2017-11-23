@@ -119,7 +119,7 @@ std::vector<detectors::Point> detectors::adaptiveNonMaximumSuppresion(const std:
         for(auto i = 0; i < filtered.size(); i++) {
             auto point = filtered[i];
             filtered.erase(std::remove_if(std::begin(filtered) + i + 1, std::end(filtered),
-                           [&distanceFunction, &radius, &point, &coefficient](const Point& p) {
+                           [&distanceFunction, &point, radius, coefficient](const Point& p) {
                 if(distanceFunction(point.row, p.row, point.col, p.col) < radius
                         && point.value * coefficient > p.value) {
                     return true;

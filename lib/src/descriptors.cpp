@@ -30,8 +30,8 @@ descriptors::Descriptor& descriptors::Descriptor::operator=(const descriptors::D
 }
 
 descriptors::Descriptor descriptors::histogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                         float angle, int histoSize, int blockSize,
-                                         int bins, borders::BorderTypes border) {
+                                               float angle, int histoSize, int blockSize,
+                                               int bins, borders::BorderTypes border) {
     assert(blockSize % histoSize == 0);
 
     auto bandwidth = 2 * M_PI / bins;
@@ -77,8 +77,8 @@ descriptors::Descriptor descriptors::histogrid(const detectors::Point& point, co
 }
 
 std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<detectors::Point>& points,
-                                                      const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
-                                                      int histoSize, int blockSize, int bins, borders::BorderTypes border) {
+                                                            const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
+                                                            int histoSize, int blockSize, int bins, borders::BorderTypes border) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
 
@@ -90,8 +90,8 @@ std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<de
 }
 
 std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                                       int histoSize, int blockSize, int bins,
-                                                       borders::BorderTypes border) {
+                                                             int histoSize, int blockSize, int bins,
+                                                             borders::BorderTypes border) {
     assert(blockSize % histoSize == 0);
 
     auto parabolic3bfit = [](const Descriptor& descriptor, int peak) {
@@ -141,7 +141,7 @@ descriptors::Descriptor descriptors::normalize(const Descriptor& descriptor) {
     }));
 
     std::transform(descriptor.data.get(), descriptor.data.get() + descriptor.size, normalized.data.get(),
-                   [&hAccumulator ] (float value) {
+                   [hAccumulator] (float value) {
         return value / hAccumulator;
     });
 
@@ -152,7 +152,7 @@ descriptors::Descriptor descriptors::trim(const Descriptor& descriptor, float th
     Descriptor trimmed(descriptor.point, descriptor.size);
 
     std::transform(descriptor.data.get(), descriptor.data.get() + descriptor.size, trimmed.data.get(),
-                   [&threshold] (float value) {
+                   [threshold] (float value) {
         return std::min(value, threshold);
     });
 

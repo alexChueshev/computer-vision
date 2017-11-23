@@ -95,7 +95,7 @@ kernels::Kernel kernels::gaussian1d(float sigma, int size) {
         data[i] = val;
     }
 
-    std::for_each(data, data + size, [&sum](float &elem) {
+    std::for_each(data, data + size, [sum](float &elem) {
         elem /= sum;
     });
 
@@ -123,7 +123,7 @@ kernels::Kernel kernels::gaussian2d(float sigma, int size) {
         }
     }
 
-    std::for_each(data, data + size * size, [&sum](float &elem) {
+    std::for_each(data, data + size * size, [sum](float &elem) {
         elem /= sum;
     });
 
