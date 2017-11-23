@@ -10,19 +10,19 @@ namespace pi::descriptors {
 
     typedef std::function<Descriptor(const Descriptor&)> NormalizeFunction;
 
-    Descriptor hog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+    Descriptor histogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
                    float angle = .0f, int histoSize = 4, int blockSize = 16, int bins = 8,
                    borders::BorderTypes border = borders::BORDER_REPLICATE);
 
-    std::vector<Descriptor> hog(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
+    std::vector<Descriptor> histogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
                                 const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16, int bins = 8,
                                 borders::BorderTypes border = borders::BORDER_REPLICATE);
 
-    std::vector<Descriptor> rhog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+    std::vector<Descriptor> rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
                                  int histoSize = 4, int blockSize = 16, int bins = 8,
                                  borders::BorderTypes border = borders::BORDER_REPLICATE);
 
-    std::vector<Descriptor> rhog(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
+    std::vector<Descriptor> rhistogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
                                  const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16,
                                  int bins = 8, borders::BorderTypes border = borders::BORDER_REPLICATE);
 

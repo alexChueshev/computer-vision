@@ -29,7 +29,7 @@ descriptors::Descriptor& descriptors::Descriptor::operator=(const descriptors::D
     return *this;
 }
 
-descriptors::Descriptor descriptors::hog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+descriptors::Descriptor descriptors::histogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
                                          float angle, int histoSize, int blockSize,
                                          int bins, borders::BorderTypes border) {
     assert(blockSize % histoSize == 0);
@@ -76,20 +76,20 @@ descriptors::Descriptor descriptors::hog(const detectors::Point& point, const st
     return descriptor;
 }
 
-std::vector<descriptors::Descriptor> descriptors::hog(const std::vector<detectors::Point>& points,
+std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<detectors::Point>& points,
                                                       const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
                                                       int histoSize, int blockSize, int bins, borders::BorderTypes border) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
 
     for(const auto &point : points) {
-        descriptors.push_back(norm(hog(point, sobel, .0f, histoSize, blockSize, bins, border)));
+        descriptors.push_back(norm(histogrid(point, sobel, .0f, histoSize, blockSize, bins, border)));
     }
 
     return descriptors;
 }
 
-std::vector<descriptors::Descriptor> descriptors::rhog(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
                                                        int histoSize, int blockSize, int bins,
                                                        borders::BorderTypes border) {
     assert(blockSize % histoSize == 0);
@@ -105,25 +105,25 @@ std::vector<descriptors::Descriptor> descriptors::rhog(const detectors::Point& p
     };
 
     std::vector<Descriptor> descriptors;
-    auto base = hog(point, sobel, .0f, blockSize, blockSize, 36, border);
+    auto base = histogrid(point, sobel, .0f, blockSize, blockSize, 36, border);
     auto peaksIndexes = peaks(base, .8f, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.push_back(hog(point, sobel, parabolic3bfit(base, index) * 2 * M_PI / base.size, histoSize,
+        descriptors.push_back(histogrid(point, sobel, parabolic3bfit(base, index) * 2 * M_PI / base.size, histoSize,
                                   blockSize, bins, border));
     }
 
     return descriptors;
 }
 
-std::vector<descriptors::Descriptor> descriptors::rhog(const std::vector<detectors::Point>& points,
+std::vector<descriptors::Descriptor> descriptors::rhistogrid(const std::vector<detectors::Point>& points,
                                                        const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
                                                        int histoSize, int blockSize, int bins, borders::BorderTypes border) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
 
     for(const auto &point : points) {
-        for(const auto &unnormalized : rhog(point, sobel, histoSize, blockSize, bins, border)) {
+        for(const auto &unnormalized : rhistogrid(point, sobel, histoSize, blockSize, bins, border)) {
             descriptors.push_back(norm(unnormalized));
         }
     }
