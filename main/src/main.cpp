@@ -92,4 +92,25 @@ void l4() {
 }
 
 void l5() {
+    auto normalize = [](const descriptors::Descriptor& descriptor) {
+        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
+    };
+
+    auto image1 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/Lenna.png")));
+
+    auto image2 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/Lenna.png")));
+
+    auto matchImage = utils::drawMatches(image2, image1,
+                                         descriptors::match(descriptors::rhog(detectors::harris(image2),
+                                                                 filters::sobel(image2, borders::BORDER_REFLECT),
+                                                                 normalize),
+                                                            descriptors::rhog(detectors::harris(image1),
+                                                                 filters::sobel(image1, borders::BORDER_REFLECT),
+                                                                 normalize)));
+    utils::render("matches", matchImage);
+    utils::save("../examples/lr5/matches", matchImage);
 }

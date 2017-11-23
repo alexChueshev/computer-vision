@@ -35,29 +35,39 @@ descriptors::Descriptor descriptors::hog(const detectors::Point& point, const st
     assert(blockSize % histoSize == 0);
 
     auto bandwidth = 2 * M_PI / bins;
+    auto hBlockSize = blockSize / 2;
     auto histoNums = blockSize / histoSize;
     Descriptor descriptor(point, histoNums * histoNums * bins);
+
+    auto fCos = std::cos(angle);
+    auto fSin = std::sin(angle);
 
     auto fBorder = borders::get(border);
     auto gaussian = kernels::gaussian2d(std::log10(blockSize), blockSize);
 
     for(auto row = 0; row < blockSize; row++) {
         for(auto col = 0; col < blockSize; col++) {
-            auto rI = point.row + row - blockSize / 2;
-            auto rC = point.col + col - blockSize / 2;
+            auto rR = row - hBlockSize;
+            auto rC = col - hBlockSize;
+
+            int r = rR * fCos - rC * fSin + hBlockSize;
+            int c = rC * fCos + rR * fSin + hBlockSize;
+
+            if(r < 0 || r >= blockSize || c < 0 || c >= blockSize) continue;
 
             auto magnitudeVal = *gaussian.at(row, col) * filters::magnitudeVal(
-                        fBorder(rI, rC, sobel.first),
-                        fBorder(rI, rC, sobel.second));
+                        fBorder(point.row + rR, point.col + rC, sobel.first),
+                        fBorder(point.row + rR, point.col + rC, sobel.second));
             auto phi = filters::phiVal(
-                        fBorder(rI, rC, sobel.first),
-                        fBorder(rI, rC, sobel.second)) + M_PI;
+                        fBorder(point.row + rR, point.col + rC, sobel.first),
+                        fBorder(point.row + rR, point.col + rC, sobel.second)) + M_PI - angle;
+            if(phi < 0 || phi > 2 * M_PI) phi += -std::copysign(1, phi) * 2 * M_PI;
 
             auto clbin = (phi / bandwidth) - .5f;
             auto distance = phi - bandwidth * (std::floor(clbin) + std::copysignf(.5f, clbin));
             auto lbin = clbin < 1e-8 ? bins - 1 : (int) floor(clbin);
 
-            auto histoNum = row / histoSize * histoNums + col / histoSize;
+            auto histoNum = r / histoSize * histoNums + c / histoSize;
             descriptor.data[histoNum * bins + lbin] += (1 - distance / bandwidth) * magnitudeVal;
             descriptor.data[histoNum * bins + (lbin + 1) % bins] += distance / bandwidth * magnitudeVal;
         }
@@ -85,10 +95,13 @@ std::vector<descriptors::Descriptor> descriptors::rhog(const detectors::Point& p
     assert(blockSize % histoSize == 0);
 
     auto parabolic3bfit = [](const Descriptor& descriptor, int peak) {
+        assert(peak >= 0 && peak < descriptor.size);
+
         auto ym1 = descriptor.data[(peak - 1) % descriptor.size];
         auto y0 = descriptor.data[peak];
         auto yp1 = descriptor.data[(peak + 1) % descriptor.size];
-        return peak + (ym1 - yp1) / (2 * (ym1 - 2 * y0 + yp1));
+        auto p = (ym1 - yp1) / (2 * (ym1 - 2 * y0 + yp1)); // [-1/2;1/2]
+        return ((peak + p < 0) ? descriptor.size : peak) + p;
     };
 
     std::vector<Descriptor> descriptors;
@@ -96,7 +109,7 @@ std::vector<descriptors::Descriptor> descriptors::rhog(const detectors::Point& p
     auto peaksIndexes = peaks(base, .8f, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.push_back(hog(point, sobel, parabolic3bfit(base, index) * 2 * M_PI / bins, histoSize,
+        descriptors.push_back(hog(point, sobel, parabolic3bfit(base, index) * 2 * M_PI / base.size, histoSize,
                                   blockSize, bins, border));
     }
 
@@ -150,10 +163,11 @@ std::vector<int> descriptors::peaks(const Descriptor& descriptor, float threshol
     std::vector<int> positions;
 
     auto maxValue = std::max_element(descriptor.data.get(), descriptor.data.get() + descriptor.size);
-    positions.push_back(std::distance(descriptor.data.get(), maxValue));
+    auto fIndex = std::distance(descriptor.data.get(), maxValue);
+    positions.push_back(fIndex);
 
     for(auto i = 0; i < descriptor.size && positions.size() < nums; i++) {
-        if(descriptor.data[i] >= *maxValue * threshold) {
+        if(descriptor.data[i] >= *maxValue * threshold && i != fIndex) {
             positions.push_back(i);
         }
     }
