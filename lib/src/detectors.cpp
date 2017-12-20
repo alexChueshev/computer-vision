@@ -82,9 +82,8 @@ std::vector<detectors::Point> detectors::harris(const Img& src, int patchSize, f
     auto pDerivatives = filters::sobel(src, border);
 
     auto sigma = std::log10(patchSize) * 2;
-    auto kernelSize = 2 * (int)(sigma * 3) + 1;
-    auto gaussian = kernels::gaussian2d(sigma, kernelSize);
-    auto hSize = kernelSize / 2;
+    auto gaussian = kernels::gaussian2d(sigma, patchSize);
+    auto hSize = patchSize / 2;
 
     for(auto row = 0, height = src.height(); row < height; row++) {
         for(auto col = 0, width = src.width(); col < width; col++) {
