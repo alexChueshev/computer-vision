@@ -15,12 +15,15 @@ void l4();
 
 void l5();
 
+void l6();
+
 int main() {
     //l1();
     //l2();
     //l3();
     //l4();
-    l5();
+    //l5();
+    l6();
 
     return 0;
 }
@@ -113,4 +116,7 @@ void l5() {
                                                                  normalize)));
     utils::render("matches", matchImage);
     utils::save("../examples/lr5/matches", matchImage);
+}
+
+void l6() {
 }

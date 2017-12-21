@@ -58,3 +58,17 @@ Img opts::scale(const Img& src) {
 
     return scaled;
 }
+
+Img opts::difference(const Img& src1, const Img& src2) {
+    assert(src1.width() == src2.width());
+    assert(src1.height() == src2.height());
+
+    Img img(src1.height(), src1.width(), src1.channels());
+
+    auto* dataSrc1 = src1.data();
+    auto* dataSrc2 = src2.data();
+    auto* dataImg = img.data();
+    std::transform(dataSrc1, dataSrc1 + src1.dataSize(), dataSrc2, dataImg, std::minus<float>());
+
+    return img;
+}

@@ -11,6 +11,8 @@ namespace pi::opts {
     Img normalize(const Img& src);
 
     Img scale(const Img& src);
+
+    Img difference(const Img& src1, const Img& src2);
 }
 
 #endif //COMPUTER_VISION_OPERATIONS_H

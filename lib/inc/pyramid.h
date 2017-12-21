@@ -17,6 +17,14 @@ namespace pi::pyramids {
 
     std::vector<Octave> gpyramid(const Img& img, int layers, const OctavesNumberFunction& op);
 
+    std::vector<Octave> gpyramid(const Img& img, int layers, int addLayers, const OctavesNumberFunction& op);
+
+    std::vector<Octave> dog(const Img& img, int layers, const OctavesNumberFunction& op);
+
+    std::vector<Octave> dog(const std::vector<Octave>& gpyramid);
+
+    Layer dog(const Layer& first, const Layer& second);
+
     int logOctavesCount(int dimension);
 
     void iterate(const std::vector<Octave>& octaves, const LoopOctaveFunction& loopFunction);
@@ -34,26 +42,29 @@ class pi::pyramids::Octave {
 
 public:
     constexpr static int MIN_OCTAVE_IMG_SIZE = 16;
-    constexpr static float SIGMA_ZERO = 1.4f;
+    constexpr static float SIGMA_ZERO = 1.6f;
     constexpr static float SIGMA_START = .5f;
 
 protected:
     float _step;
     int _numLayers;
+    int _addLayers;
     std::vector<Layer> _layers;
 
 public:
-    Octave(const Layer& layer, int numLayers);
+    Octave(Layer layer, int numLayers, int addLayers);
 
-    Octave(Layer&& layer, int numLayers);
+    Octave(const Img& img, int numLayers, int addLayers, float sigmaPrev, float sigmaNext);
 
-    Octave(const Img& img, int numLayers, float sigmaPrev, float sigmaNext);
+    Octave(std::vector<Layer> layers, float step, int addLayers);
 
     Octave nextOctave() const;
 
     Octave& createLayers();
 
     const std::vector<Layer>& layers() const;
+
+    float step() const;
 
 protected:
     float _calcStep(int numLayers);

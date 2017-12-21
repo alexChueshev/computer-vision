@@ -2,43 +2,46 @@
 
 using namespace pi;
 
-pyramids::Octave::Octave(const Layer& layer, int numLayers)
+pyramids::Octave::Octave(Layer layer, int numLayers, int addLayers)
     : _step(_calcStep(numLayers))
     , _numLayers(numLayers)
+    , _addLayers(addLayers)
 {
-    _layers.reserve(numLayers);
-    _layers.push_back(layer);
-}
-
-pyramids::Octave::Octave(Layer&& layer, int numLayers)
-    : _step(_calcStep(numLayers))
-    , _numLayers(numLayers)
-{
-    _layers.reserve(numLayers);
+    _layers.reserve(_numLayers + _addLayers);
     _layers.push_back(std::move(layer));
 }
 
-pyramids::Octave::Octave(const Img& img, int numLayers, float sigmaPrev, float sigmaNext)
+pyramids::Octave::Octave(const Img& img, int numLayers, int addLayers, float sigmaPrev, float sigmaNext)
     : _step(_calcStep(numLayers))
     , _numLayers(numLayers)
+    , _addLayers(addLayers)
 {
+    _layers.reserve(_numLayers + _addLayers);
     _layers.push_back({filters::gaussian(img,
                                          _sigmaDelta(sigmaPrev, sigmaNext),
                                          borders::BORDER_REFLECT), sigmaNext, sigmaNext});
 }
 
-pi::pyramids::Octave pyramids::Octave::nextOctave() const {
-    auto &lastOctaveLayer = _layers.back();
+pyramids::Octave::Octave(std::vector<Layer> layers, float step, int addLayers)
+    : _step(step)
+    , _numLayers(layers.size() - addLayers)
+    , _addLayers(addLayers)
+    , _layers(std::move(layers))
+{
+}
+
+pyramids::Octave pyramids::Octave::nextOctave() const {
+    auto &lastOctaveLayer = _layers.at(_numLayers - 1);
     auto &firstOctaveLayer = _layers.front();
 
     return Octave({opts::scale(lastOctaveLayer.img),
                    firstOctaveLayer.sigma,
                    lastOctaveLayer.sigmaEffective * _step
-                  }, _numLayers);
+                  }, _numLayers, _addLayers);
 }
 
 pyramids::Octave& pyramids::Octave::createLayers() {
-    for(auto i = 1; i < _numLayers; i++) {
+    for(auto i = 1, size = _numLayers + _addLayers; i < size; i++) {
         auto &prevLayer = _layers.back();
         auto sigma = _step * prevLayer.sigma;
         auto sigmaEffective = _step * prevLayer.sigmaEffective;
@@ -49,6 +52,10 @@ pyramids::Octave& pyramids::Octave::createLayers() {
     }
 
     return *this;
+}
+
+float pyramids::Octave::step() const {
+    return _step;
 }
 
 const std::vector<pyramids::Layer>& pyramids::Octave::layers() const {
@@ -63,15 +70,18 @@ float pyramids::Octave::_sigmaDelta(float sigmaPrev, float sigmaNext) {
     return std::sqrt(std::pow(sigmaNext, 2) - std::pow(sigmaPrev, 2));
 }
 
-std::vector<pyramids::Octave> pyramids::gpyramid(const Img& img, int layers,
-                                                 const OctavesNumberFunction& op) {
+std::vector<pyramids::Octave> pyramids::gpyramid(const Img& img, int layers, const OctavesNumberFunction& op) {
+    return gpyramid(img, layers, 0, op);
+}
+
+std::vector<pyramids::Octave> pyramids::gpyramid(const Img& img, int layers, int addLayers, const OctavesNumberFunction& op) {
     assert(img.channels() == 1);
 
-    std::vector<pyramids::Octave> octaves;
+    std::vector<Octave> octaves;
     octaves.reserve(op(std::min(img.width(), img.height())));
 
     //construct first octave
-    octaves.push_back(Octave(img, layers, Octave::SIGMA_START, Octave::SIGMA_ZERO).createLayers());
+    octaves.push_back(Octave(img, layers, addLayers, Octave::SIGMA_START, Octave::SIGMA_ZERO).createLayers());
 
     //construct other octaves
     for(size_t i = 1, size = octaves.capacity(); i < size; i++) {
@@ -79,6 +89,31 @@ std::vector<pyramids::Octave> pyramids::gpyramid(const Img& img, int layers,
     }
 
     return octaves;
+}
+
+std::vector<pyramids::Octave> pyramids::dog(const std::vector<Octave>& gpyramid) {
+    auto octaves = gpyramid.size();
+    std::vector<Octave> dpyramid;
+    dpyramid.reserve(octaves);
+
+    for(auto i = 0; i < octaves; i++) {
+        auto &octave = gpyramid[i];
+        auto &glayers = octave.layers();
+
+        auto layers = glayers.size() - 1;
+        std::vector<Layer> dlayers;
+        dlayers.reserve(layers);
+
+        for(auto j = 0; j < layers; j++) {
+            auto &first = glayers[j];
+            auto &second = glayers[j + 1];
+            dlayers.push_back({opts::difference(first.img, second.img), first.sigma, first.sigmaEffective});
+        }
+
+        dpyramid.push_back(Octave(std::move(dlayers), octave.step(), 0));
+    }
+
+    return dpyramid;
 }
 
 int pyramids::logOctavesCount(int dimension) {
