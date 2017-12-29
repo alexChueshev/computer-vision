@@ -36,7 +36,7 @@ pyramids::Octave pyramids::Octave::nextOctave() const {
 
     return Octave({opts::scale(lastOctaveLayer.img),
                    firstOctaveLayer.sigma,
-                   lastOctaveLayer.sigmaEffective * _step
+                   lastOctaveLayer.sigmaGlobal * _step
                   }, _numLayers, _addLayers);
 }
 
@@ -44,7 +44,7 @@ pyramids::Octave& pyramids::Octave::createLayers() {
     for(auto i = 1, size = _numLayers + _addLayers; i < size; i++) {
         auto &prevLayer = _layers.back();
         auto sigma = _step * prevLayer.sigma;
-        auto sigmaEffective = _step * prevLayer.sigmaEffective;
+        auto sigmaEffective = _step * prevLayer.sigmaGlobal;
 
         _layers.push_back({filters::gaussian(prevLayer.img,
                                              _sigmaDelta(prevLayer.sigma, sigma),
@@ -107,7 +107,7 @@ std::vector<pyramids::Octave> pyramids::dog(const std::vector<Octave>& gpyramid)
         for(auto j = 0; j < layers; j++) {
             auto &first = glayers[j];
             auto &second = glayers[j + 1];
-            dlayers.push_back({opts::difference(first.img, second.img), first.sigma, first.sigmaEffective});
+            dlayers.push_back({opts::difference(first.img, second.img), first.sigma, first.sigmaGlobal});
         }
 
         dpyramid.push_back(Octave(std::move(dlayers), octave.step(), 0));

@@ -35,7 +35,7 @@ namespace pi::pyramids {
 struct pi::pyramids::Layer {
     const Img img;
     const float sigma;
-    const float sigmaEffective;
+    const float sigmaGlobal;
 };
 
 class pi::pyramids::Octave {
