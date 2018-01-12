@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <cassert>
+#include <functional>
 
 namespace pi {
     class Img;
