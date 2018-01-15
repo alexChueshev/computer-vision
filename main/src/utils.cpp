@@ -95,8 +95,23 @@ Img utils::addPointsTo(const Img& src, const std::vector<detectors::Point>& poin
     for(const auto &point : points) {
         auto* pixel = dst.at(point.row, point.col);
         *(pixel + 0) = .0f;
-        *(pixel + 1) = 1.0f;
+        *(pixel + 1) = 1.f;
         *(pixel + 2) = 1.f; //yellow color
+    }
+
+    return dst;
+}
+
+cv::Mat utils::addBlobsTo(const Img& src, const std::vector<detectors::SPoint>& points) {
+    assert(src.channels() == 1);
+
+    //convert to cv::Mat
+    auto dst = convertToMat(src);
+    auto color = cv::Scalar(1);
+
+    //add blobs to image
+    for(const auto &point : points) {
+        cv::circle(dst, cv::Point(point.row, point.col), point.sigmaGlobal, color);
     }
 
     return dst;

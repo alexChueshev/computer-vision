@@ -102,6 +102,12 @@ kernels::Kernel kernels::gaussian1d(float sigma, int size) {
     return gaussian;
 }
 
+kernels::Kernel kernels::gaussian1d(float sigma) {
+    auto size = 2 * (int)(sigma * 3) + 1;
+
+    return gaussian1d(sigma, size);
+}
+
 kernels::Kernel kernels::gaussian2d(float sigma, int size) {
     assert(sigma > 0);
 
@@ -130,13 +136,16 @@ kernels::Kernel kernels::gaussian2d(float sigma, int size) {
     return gaussian;
 }
 
+kernels::Kernel kernels::gaussian2d(float sigma) {
+    auto size = 2 * (int)(sigma * 3) + 1;
+
+    return gaussian2d(sigma, size);
+}
+
 std::pair<kernels::Kernel, kernels::Kernel> kernels::gaussian(float sigma) {
     auto size = 2 * (int)(sigma * 3) + 1;
-    auto gaussian = gaussian1d(sigma, size);
 
-    return std::pair<kernels::Kernel, kernels::Kernel>(
-                gaussian,
-                gaussian.transpose());
+    return gaussian(sigma, size);
 }
 
 std::pair<kernels::Kernel, kernels::Kernel> kernels::gaussian(float sigma, int size) {

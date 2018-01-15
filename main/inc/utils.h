@@ -34,6 +34,8 @@ namespace utils {
 
     pi::Img addPointsTo(const pi::Img& src, const std::vector<pi::detectors::Point>& points);
 
+    cv::Mat addBlobsTo(const pi::Img& src, const std::vector<pi::detectors::SPoint>& points);
+
     float euclidDistance(int x1, int x2, int y1, int y2);
 
     float radius(const pi::Img& img);

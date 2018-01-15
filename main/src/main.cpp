@@ -49,7 +49,7 @@ void l2() {
                     utils::load("/home/alexander/Lenna.png"))),
                         2, pyramids::logOctavesCount),
                             [](const pyramids::Layer& layer) {
-        utils::save("../examples/lr2/" + std::to_string(layer.sigmaEffective), layer.img);
+        utils::save("../examples/lr2/" + std::to_string(layer.sigmaGlobal), layer.img);
     });
 }
 
@@ -119,4 +119,15 @@ void l5() {
 }
 
 void l6() {
+    auto image = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/Lenna.png")));
+
+    auto dog = pyramids::dog(
+                   pyramids::gpyramid(image, 3, 3, pyramids::logOctavesCount));
+
+    auto points = detectors::shiTomasi(dog, detectors::blobs(dog), 9e-5f);
+    auto harrisLaplacianImage = utils::addBlobsTo(image, points);
+    utils::render("harrisLaplacianImage", harrisLaplacianImage);
+    //utils::save("../examples/lr6", harrisLaplacianImage);
 }

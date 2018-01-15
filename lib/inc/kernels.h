@@ -11,7 +11,11 @@ namespace pi::kernels {
 
     Kernel gaussian1d(float sigma, int size);
 
+    Kernel gaussian1d(float sigma);
+
     Kernel gaussian2d(float sigma, int size);
+
+    Kernel gaussian2d(float sigma);
 
     std::pair<Kernel, Kernel> gaussian(float sigma);
 
