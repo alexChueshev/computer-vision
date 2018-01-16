@@ -23,7 +23,7 @@ int main() {
     //l3();
     //l4();
     //l5();
-    l6();
+      l6();
 
     return 0;
 }
@@ -119,15 +119,30 @@ void l5() {
 }
 
 void l6() {
-    auto image = opts::normalize(
+    auto normalize = [](const descriptors::Descriptor& descriptor) {
+        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
+    };
+
+    auto image1 = opts::normalize(
                     opts::grayscale(
                         utils::load("/home/alexander/Lenna.png")));
+    auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
+    auto dog1 = pyramids::dog(gpyramid1);
 
-    auto dog = pyramids::dog(
-                   pyramids::gpyramid(image, 3, 3, pyramids::logOctavesCount));
+    auto image2 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/Lenna.png")));
+    auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
+    auto dog2 = pyramids::dog(gpyramid2);
 
-    auto points = detectors::shiTomasi(dog, detectors::blobs(dog), 9e-5f);
-    auto harrisLaplacianImage = utils::addBlobsTo(image, points);
-    utils::render("harrisLaplacianImage", harrisLaplacianImage);
-    //utils::save("../examples/lr6", harrisLaplacianImage);
+    auto matchImage = utils::drawMatches(image2, image1,
+                                         descriptors::match(descriptors::shistogrid(detectors::shiTomasi(
+                                                                                        dog2, detectors::blobs(dog2),
+                                                                                        1e-3f), gpyramid2, normalize),
+                                                            descriptors::shistogrid(detectors::shiTomasi(
+                                                                                        dog1, detectors::blobs(dog1),
+                                                                                        1e-3f), gpyramid1, normalize), .6f));
+
+    utils::render("matches", matchImage);
+    utils::save("../examples/lr6/matches", matchImage);
 }

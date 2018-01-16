@@ -146,7 +146,7 @@ std::vector<detectors::SPoint> detectors::harris(const std::vector<pyramids::Oct
         for(;o == bIt->octave && l == bIt->layer && bIt != end; bIt++) {
             auto value = utils::harris(_harrisValues(pDerivatives, gaussian, bIt->localRow, bIt->localCol, fBorder), k);
             if(value > threshold) {
-                points.push_back(*bIt);
+                points.push_back(std::move(*bIt));
             }
         }
     }
@@ -164,12 +164,12 @@ std::vector<detectors::SPoint> detectors::shiTomasi(const std::vector<pyramids::
         auto o = bIt->octave, l = bIt->layer;
         auto &layer = dog[o].layers()[l];
         auto pDerivatives = filters::sobel(layer.img, border);
-        auto gaussian = kernels::gaussian2d(layer.sigma, 5);
+        auto gaussian = kernels::gaussian2d(layer.sigma);
 
         for(;o == bIt->octave && l == bIt->layer && bIt != end; bIt++) {
             auto value = utils::shiTomasi(_harrisValues(pDerivatives, gaussian, bIt->localRow, bIt->localCol, fBorder));
             if(value > threshold) {
-                points.push_back(*bIt);
+                points.push_back(std::move(*bIt));
             }
         }
     }

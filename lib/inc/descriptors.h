@@ -10,21 +10,39 @@ namespace pi::descriptors {
 
     typedef std::function<Descriptor(const Descriptor&)> NormalizeFunction;
 
+    constexpr int D_HISTO_SIZE = 4;
+    constexpr int D_HISTO_NUMS = 4;
+    constexpr int D_BINS = 8;
+
+    constexpr float ORI_PEAK_RATIO = .8f;
+    constexpr float ORI_SIGMA_C = 1.5f;
+    constexpr float MAGNITUDE_SIGMA_C = .5f;
+
     Descriptor histogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                   float angle = .0f, int histoSize = 4, int blockSize = 16, int bins = 8,
-                   borders::BorderTypes border = borders::BORDER_REPLICATE);
+                         float angle = .0f, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
+                         int bins = D_BINS, float sigma = std::log10(D_HISTO_SIZE * D_HISTO_NUMS),
+                         borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Descriptor> histogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
-                                      const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16, int bins = 8,
-                                      borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                      const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
+                                      int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Descriptor> rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                       int histoSize = 4, int blockSize = 16, int bins = 8,
+                                       int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
                                        borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Descriptor> rhistogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
-                                       const NormalizeFunction& norm, int histoSize = 4, int blockSize = 16,
-                                       int bins = 8, borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE,
+                                       int histoNums = D_HISTO_NUMS, int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE);
+
+    std::vector<Descriptor> shistogrid(const detectors::SPoint& point, const std::pair<Img, Img>& sobel,
+                                       int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
+                                       borders::BorderTypes border = borders::BORDER_REPLICATE);
+
+    std::vector<Descriptor> shistogrid(const std::vector<detectors::SPoint>& points,
+                                       const std::vector<pyramids::Octave>& gpyramid, const NormalizeFunction& norm,
+                                       int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
+                                       borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     Descriptor normalize(const Descriptor& descriptor);
 
