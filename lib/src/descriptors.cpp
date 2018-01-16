@@ -1,5 +1,5 @@
 #include <descriptors.h>
-#include <iostream>
+
 using namespace pi;
 
 namespace {
@@ -78,13 +78,6 @@ descriptors::Descriptor descriptors::histogrid(const detectors::Point& point, co
             auto lbin = clbin < 1e-8 ? bins - 1 : (int) floor(clbin);
 
             auto histoNum = r / histoSize * histoNums + c / histoSize;
-            if(histoNum * bins + (lbin + 1) % bins > 127 || histoNum * bins + (lbin + 1) % bins < 0) {
-                std::cout << histoNum * bins + lbin << std::endl;
-            }
-
-            if(histoNum * bins + (lbin + 1) % bins > 127 || histoNum * bins + (lbin + 1) % bins < 0) {
-                std::cout << histoNum * bins + lbin << std::endl;
-            }
 
             descriptor.data[histoNum * bins + lbin] += (1 - distance / bandwidth) * magnitudeVal;
             descriptor.data[histoNum * bins + (lbin + 1) % bins] += distance / bandwidth * magnitudeVal;
@@ -181,32 +174,31 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const std::vector<d
     return descriptors;
 }
 
-descriptors::Descriptor descriptors::normalize(const Descriptor& descriptor) {
-    Descriptor normalized(descriptor.point, descriptor.size);
+descriptors::Descriptor descriptors::normalize(Descriptor descriptor) {
+    auto first = descriptor.data.get();
+    auto last = descriptor.data.get() + descriptor.size;
 
-    auto hAccumulator = std::sqrt(
-                            std::accumulate(descriptor.data.get(), descriptor.data.get() + descriptor.size, .0f,
-                                       [] (float accumulator, float value) {
+    auto sumSq = std::accumulate(first, last, .0f, [] (auto accumulator, auto value) {
         return accumulator + value * value;
-    }));
+    });
+    auto length = std::sqrt(sumSq);
 
-    std::transform(descriptor.data.get(), descriptor.data.get() + descriptor.size, normalized.data.get(),
-                   [hAccumulator] (float value) {
-        return value / hAccumulator;
+    std::transform(first, last, first, [length] (auto value) {
+        return value / length;
     });
 
-    return normalized;
+    return descriptor;
 }
 
-descriptors::Descriptor descriptors::trim(const Descriptor& descriptor, float threshold) {
-    Descriptor trimmed(descriptor.point, descriptor.size);
+descriptors::Descriptor descriptors::trim(Descriptor descriptor, float threshold) {
+    auto first = descriptor.data.get();
+    auto last = descriptor.data.get() + descriptor.size;
 
-    std::transform(descriptor.data.get(), descriptor.data.get() + descriptor.size, trimmed.data.get(),
-                   [threshold] (float value) {
+    std::transform(first, last, first, [threshold] (auto value) {
         return std::min(value, threshold);
     });
 
-    return trimmed;
+    return descriptor;
 }
 
 std::vector<int> descriptors::peaks(const Descriptor& descriptor, float threshold, int nums) {

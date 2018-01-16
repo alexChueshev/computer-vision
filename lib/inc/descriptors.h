@@ -44,9 +44,9 @@ namespace pi::descriptors {
                                        int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
                                        borders::BorderTypes border = borders::BORDER_REPLICATE);
 
-    Descriptor normalize(const Descriptor& descriptor);
+    Descriptor normalize(Descriptor descriptor);
 
-    Descriptor trim(const Descriptor& descriptor, float threshold = .2f);
+    Descriptor trim(Descriptor descriptor, float threshold = .2f);
 
     float distance(const Descriptor& descriptor1, const Descriptor& descriptor2);
 
