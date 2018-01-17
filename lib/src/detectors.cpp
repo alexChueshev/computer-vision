@@ -177,15 +177,17 @@ std::vector<detectors::SPoint> detectors::shiTomasi(const std::vector<pyramids::
     return points;
 }
 
-std::vector<detectors::SPoint> detectors::blobs(const std::vector<pyramids::Octave>& dog, float preContrastThreshold,
+std::vector<detectors::SPoint> detectors::blobs(const std::vector<pyramids::Octave>& dog, float contrastThreshold,
                                                 borders::BorderTypes border) {
     std::vector<SPoint> blobs;
     auto fBorder = borders::get(border);
 
     for(int i = 0, oSize = dog.size(); i < oSize; i++) {
         auto &layers = dog[i].layers();
+        auto lSize = layers.size() - 1;
+        auto preContrastThreshold = contrastThreshold * .5f / (lSize - 1);
 
-        for(int j = 1, lSize = layers.size() - 1; j < lSize; j++) {
+        for(int j = 1; j < lSize; j++) {
             auto &layer = layers[j];
 
             for(auto r = 0, height = layer.img.height(); r < height; r++) {

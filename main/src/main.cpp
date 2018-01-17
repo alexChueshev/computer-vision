@@ -22,8 +22,8 @@ int main() {
     //l2();
     //l3();
     //l4();
-    //l5();
-      l6();
+      l5();
+      //l6();
 
     return 0;
 }
@@ -105,15 +105,15 @@ void l5() {
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
+                        utils::load("/home/alexander/Lenna15.png")));
 
     auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match(descriptors::rhistogrid(detectors::harris(image2),
+                                         descriptors::match(descriptors::rhistogrid(detectors::harris(image2, 5, .015f),
                                                                  filters::sobel(image2, borders::BORDER_REFLECT),
                                                                  normalize),
-                                                            descriptors::rhistogrid(detectors::harris(image1),
+                                                            descriptors::rhistogrid(detectors::harris(image1, 5, .015f),
                                                                  filters::sobel(image1, borders::BORDER_REFLECT),
-                                                                 normalize)));
+                                                                 normalize), .55f));
     utils::render("matches", matchImage);
     utils::save("../examples/lr5/matches", matchImage);
 }
@@ -128,20 +128,21 @@ void l6() {
                         utils::load("/home/alexander/Lenna.png")));
     auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
     auto dog1 = pyramids::dog(gpyramid1);
+    auto points1 = detectors::shiTomasi(dog1, detectors::blobs(dog1), 25e-5f);
 
     auto image2 = opts::normalize(
                     opts::grayscale(
                         utils::load("/home/alexander/Lenna.png")));
     auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
     auto dog2 = pyramids::dog(gpyramid2);
+    auto points2 = detectors::shiTomasi(dog2, detectors::blobs(dog2), 25e-5f);
 
-    auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match(descriptors::shistogrid(detectors::shiTomasi(
-                                                                                        dog2, detectors::blobs(dog2),
-                                                                                        1e-3f), gpyramid2, normalize),
-                                                            descriptors::shistogrid(detectors::shiTomasi(
-                                                                                        dog1, detectors::blobs(dog1),
-                                                                                        1e-3f), gpyramid1, normalize), .6f));
+    auto mImage1 = utils::addBlobsTo(image1, points1);
+    auto mImage2 = utils::addBlobsTo(image2, points2);
+
+    auto matchImage = utils::drawMatches(mImage2, mImage1,
+                                          descriptors::match(descriptors::shistogrid(points2, gpyramid2, normalize),
+                                                             descriptors::shistogrid(points1, gpyramid1, normalize), .62f));
 
     utils::render("matches", matchImage);
     utils::save("../examples/lr6/matches", matchImage);

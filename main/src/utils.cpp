@@ -63,22 +63,33 @@ void utils::save(const std::string& path, const cv::Mat& img, const std::string&
 cv::Mat utils::convertToMat(const Img& src) {
     auto type = src.channels() == 1 ? CV_32FC1 : CV_32FC3;
 
-    return cv::Mat(src.height(), src.width(), type, const_cast<float*>(src.data()));
+    return cv::Mat(src.height(), src.width(), type, const_cast<float*>(src.data())).clone();
 }
 
 cv::Mat utils::drawMatches(const Img& src1, const Img& src2, const std::vector<std::pair<
                        descriptors::Descriptor, descriptors::Descriptor>>& matches) {
-    cv::Mat dst(std::max(src1.height(), src2.height()), src1.width() + src2.width(), CV_32FC3);
+    assert(src1.channels() == 1);
+    assert(src2.channels() == 1);
+
+    return drawMatches(convertToMat(convertTo3Ch(src1)), convertToMat(convertTo3Ch(src2)), matches);
+}
+
+cv::Mat utils::drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
+                           pi::descriptors::Descriptor, pi::descriptors::Descriptor>>& matches) {
+    assert(src1.type() == CV_32FC3);
+    assert(src2.type() == CV_32FC3);
+
+    cv::Mat dst(std::max(src1.rows, src2.rows), src1.cols + src2.cols, CV_32FC3);
 
     //concat images
-    convertToMat(convertTo3Ch(src1)).copyTo(cv::Mat(dst, cv::Rect(0, 0, src1.width(), src1.height())));
-    convertToMat(convertTo3Ch(src2)).copyTo(cv::Mat(dst, cv::Rect(src1.width(), 0, src2.width(), src2.height())));
+    src1.copyTo(cv::Mat(dst, cv::Rect(0, 0, src1.cols, src1.rows)));
+    src2.copyTo(cv::Mat(dst, cv::Rect(src1.cols, 0, src2.cols, src2.rows)));
 
     //draw lines
     for(const auto& match : matches) {
         cv::line(dst,
                  cv::Point(match.first.point.col, match.first.point.row),
-                 cv::Point(match.second.point.col + src1.width(), match.second.point.row),
+                 cv::Point(match.second.point.col + src1.cols, match.second.point.row),
                  cv::Scalar(.0, 1., 1.)); //yellow color
     }
 
@@ -106,12 +117,12 @@ cv::Mat utils::addBlobsTo(const Img& src, const std::vector<detectors::SPoint>& 
     assert(src.channels() == 1);
 
     //convert to cv::Mat
-    auto dst = convertToMat(src);
-    auto color = cv::Scalar(1);
+    auto dst = convertToMat(convertTo3Ch(src));
+    auto color = cv::Scalar(0, 0, 1);
 
     //add blobs to image
     for(const auto &point : points) {
-        cv::circle(dst, cv::Point(point.row, point.col), point.sigmaGlobal, color);
+        cv::circle(dst, cv::Point(point.col, point.row), point.sigmaGlobal, color);
     }
 
     return dst;

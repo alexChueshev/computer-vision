@@ -30,7 +30,7 @@ namespace pi::detectors {
     std::vector<SPoint> shiTomasi(const std::vector<pyramids::Octave>& dog, const std::vector<SPoint>& blobs,
                                   float threshold = .001f, borders::BorderTypes border = borders::BORDER_REPLICATE);
 
-    std::vector<SPoint> blobs(const std::vector<pyramids::Octave>& dog, float preContrastThreshold = 5e-4f,
+    std::vector<SPoint> blobs(const std::vector<pyramids::Octave>& dog, float contrastThreshold = 5e-2f,
                               borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Point> adaptiveNonMaximumSuppresion(const std::vector<Point>& points, int quantity, float radiusMax,

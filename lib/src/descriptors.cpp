@@ -22,6 +22,13 @@ descriptors::Descriptor::Descriptor(detectors::Point point, int size)
     std::fill(data.get(), data.get() + size, 0);
 }
 
+descriptors::Descriptor::Descriptor(detectors::Point point, int size, std::unique_ptr<float[]> data)
+    : size(size)
+    , point(std::move(point))
+    , data(std::move(data))
+{
+}
+
 descriptors::Descriptor::Descriptor(const descriptors::Descriptor& descriptor)
     : size(descriptor.size)
     , point(descriptor.point)
@@ -41,13 +48,14 @@ descriptors::Descriptor& descriptors::Descriptor::operator=(const descriptors::D
     return *this;
 }
 
-descriptors::Descriptor descriptors::histogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                               float angle, int histoSize, int histoNums,
-                                               int bins, float sigma, borders::BorderTypes border) {
+std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel, int pR, int pC, float angle,
+                                                int histoSize, int histoNums, int bins, float sigma,
+                                                borders::BorderTypes border) {
     auto bandwidth = 2 * M_PI / bins;
     auto blockSize = histoSize * histoNums;
     auto hBlockSize = blockSize / 2;
-    Descriptor descriptor(point, histoNums * histoNums * bins);
+
+    auto descriptor = std::make_unique<float[]>(histoNums * histoNums * bins);
 
     auto fCos = std::cos(angle);
     auto fSin = std::sin(angle);
@@ -65,13 +73,17 @@ descriptors::Descriptor descriptors::histogrid(const detectors::Point& point, co
 
             if(r < 0 || r >= blockSize || c < 0 || c >= blockSize) continue;
 
-            auto magnitudeVal = *gaussian.at(row, col) * filters::magnitudeVal(
-                        fBorder(point.row + rR, point.col + rC, sobel.first),
-                        fBorder(point.row + rR, point.col + rC, sobel.second));
-            auto phi = filters::phiVal(
-                        fBorder(point.row + rR, point.col + rC, sobel.first),
-                        fBorder(point.row + rR, point.col + rC, sobel.second)) + M_PI - angle;
-            if(phi < 0 || phi > 2 * M_PI) phi += -std::copysign(1, phi) * 2 * M_PI;
+            auto dx = fBorder(pR + rR, pC + rC, sobel.first);
+            auto dy = fBorder(pR + rR, pC + rC, sobel.second);
+            auto magnitudeVal = *gaussian.at(row, col) * filters::magnitudeVal(dx, dy);
+            auto phi = filters::phiVal(dx, dy) + M_PI - angle;
+
+            while(phi < 0) {
+                phi += 2 * M_PI;
+            }
+            while(phi >= 2 * M_PI) {
+                phi -= 2 * M_PI;
+            }
 
             auto clbin = (phi / bandwidth) - .5f;
             auto distance = phi - bandwidth * (std::floor(clbin) + std::copysignf(.5f, clbin));
@@ -79,8 +91,8 @@ descriptors::Descriptor descriptors::histogrid(const detectors::Point& point, co
 
             auto histoNum = r / histoSize * histoNums + c / histoSize;
 
-            descriptor.data[histoNum * bins + lbin] += (1 - distance / bandwidth) * magnitudeVal;
-            descriptor.data[histoNum * bins + (lbin + 1) % bins] += distance / bandwidth * magnitudeVal;
+            descriptor[histoNum * bins + lbin] += (1 - distance / bandwidth) * magnitudeVal;
+            descriptor[histoNum * bins + (lbin + 1) % bins] += distance / bandwidth * magnitudeVal;
         }
     }
 
@@ -95,9 +107,11 @@ std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<de
     descriptors.reserve(points.size());
     auto blockSize = histoSize * histoNums;
     auto sigma = std::log10(blockSize);
+    auto descriptorSize = histoNums * histoNums * bins;
 
     for(const auto &point : points) {
-        descriptors.push_back(norm(histogrid(point, sobel, .0f, histoSize, histoNums, bins, sigma, border)));
+        descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.row, point.col
+                                                                          , 0, histoSize, histoNums, bins, sigma, border)));
     }
 
     return descriptors;
@@ -108,13 +122,17 @@ std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Po
                                                              borders::BorderTypes border) {
     std::vector<Descriptor> descriptors;
     auto blockSize = histoNums * histoSize;
-    auto sigma = std::log10(blockSize);
-    auto base = histogrid(point, sobel, .0f, blockSize, 1, 36, sigma, border);
+    auto descriptorSize = histoNums * histoNums * bins;
+    auto sigma = 5 * std::log10(blockSize);
+
+    Descriptor base(point, 36, histogrid(sobel, point.row, point.col, .0f, blockSize, 1, 36, sigma, border));
+
     auto peaksIndexes = peaks(base, ORI_PEAK_RATIO, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.push_back(histogrid(point, sobel, _parabolic3bfit(base, index) * 2 * M_PI / base.size, histoSize,
-                                        histoNums, bins, sigma, border));
+        descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.row, point.col
+                                                                          , _parabolic3bfit(base, index) * 2 * M_PI / base.size
+                                                                          , histoSize, histoNums, bins, sigma, border)));
     }
 
     return descriptors;
@@ -142,12 +160,19 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const detectors::SP
     std::vector<Descriptor> descriptors;
     auto scaleHistoSize = histoSize * (int) std::roundf(point.sigma);
     auto scaleBlockSize = scaleHistoSize * histoNums;
-    auto base = histogrid(point, sobel, .0f, histoSize * histoNums, 1, 36, ORI_SIGMA_C * point.sigma, border);
+    auto descriptorSize = histoNums * histoNums * bins;
+
+    Descriptor base(point, 36, histogrid(sobel, point.localRow, point.localCol
+                                         , .0f, 3 * ORI_SIGMA_C * point.sigma
+                                         , 1, 36, ORI_SIGMA_C * point.sigma, border));
+
     auto peaksIndexes = peaks(base, ORI_PEAK_RATIO, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.push_back(histogrid(point, sobel, _parabolic3bfit(base, index) * 2 * M_PI / base.size, scaleHistoSize,
-                                        histoNums, bins, MAGNITUDE_SIGMA_C * scaleBlockSize, border));
+        descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.localRow, point.localCol
+                                                                          , _parabolic3bfit(base, index) * 2 * M_PI / base.size
+                                                                          , scaleHistoSize, histoNums, bins
+                                                                          , MAGNITUDE_SIGMA_C * scaleBlockSize, border)));
     }
 
     return descriptors;
@@ -225,7 +250,7 @@ float descriptors::distance(const Descriptor& descriptor1, const Descriptor& des
         distance += std::pow(descriptor1.data[i] - descriptor2.data[i], 2);
     }
 
-    return std::sqrt(distance);
+    return distance;
 }
 
 std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descriptors::match(

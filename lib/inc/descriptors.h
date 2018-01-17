@@ -18,10 +18,9 @@ namespace pi::descriptors {
     constexpr float ORI_SIGMA_C = 1.5f;
     constexpr float MAGNITUDE_SIGMA_C = .5f;
 
-    Descriptor histogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                         float angle = .0f, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
-                         int bins = D_BINS, float sigma = std::log10(D_HISTO_SIZE * D_HISTO_NUMS),
-                         borders::BorderTypes border = borders::BORDER_REPLICATE);
+    std::unique_ptr<float[]> histogrid(const std::pair<Img, Img>& sobel, int pR, int pC, float angle = .0f,
+                                       int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
+                                       float sigma = 5, borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Descriptor> histogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
                                       const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
@@ -73,6 +72,8 @@ struct pi::descriptors::Descriptor {
     Descriptor& operator=(const Descriptor& descriptor);
 
     Descriptor& operator=(Descriptor&& descriptor) = default;
+
+    Descriptor(detectors::Point point, int size, std::unique_ptr<float[]> data);
 
     ~Descriptor() = default;
 };

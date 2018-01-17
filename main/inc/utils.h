@@ -30,6 +30,9 @@ namespace utils {
     cv::Mat drawMatches(const pi::Img& src1, const pi::Img& src2, const std::vector<std::pair<
                         pi::descriptors::Descriptor, pi::descriptors::Descriptor>>& matches);
 
+    cv::Mat drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
+                        pi::descriptors::Descriptor, pi::descriptors::Descriptor>>& matches);
+
     pi::Img convertTo3Ch(const pi::Img& src);
 
     pi::Img addPointsTo(const pi::Img& src, const std::vector<pi::detectors::Point>& points);
