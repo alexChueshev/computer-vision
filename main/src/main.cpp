@@ -22,8 +22,8 @@ int main() {
     //l2();
     //l3();
     //l4();
-      l5();
-      //l6();
+    //l5();
+      l6();
 
     return 0;
 }
@@ -105,7 +105,7 @@ void l5() {
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("/home/alexander/Lenna15.png")));
+                        utils::load("/home/alexander/Lenna.png")));
 
     auto matchImage = utils::drawMatches(image2, image1,
                                          descriptors::match(descriptors::rhistogrid(detectors::harris(image2, 5, .015f),
