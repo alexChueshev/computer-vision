@@ -111,10 +111,10 @@ void l5() {
                         utils::load("/home/alexander/Lenna.png")));
 
     auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match(descriptors::rhistogrid(detectors::harris(image2, 5, .015f),
+                                         descriptors::match(descriptors::riDescriptors(detectors::harris(image2, 5, .015f),
                                                                  filters::sobel(image2, borders::BORDER_REFLECT),
                                                                  normalize),
-                                                            descriptors::rhistogrid(detectors::harris(image1, 5, .015f),
+                                                            descriptors::riDescriptors(detectors::harris(image1, 5, .015f),
                                                                  filters::sobel(image1, borders::BORDER_REFLECT),
                                                                  normalize), .55f));
     utils::render("matches", matchImage);
