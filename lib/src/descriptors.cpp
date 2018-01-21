@@ -12,6 +12,14 @@ namespace {
         auto p = (ym1 - yp1) / (2 * (ym1 - 2 * y0 + yp1)); // [-1/2;1/2]
         return ((peak + p < 0) ? descriptor.size : peak) + p;
     }
+
+    std::pair<int, float> _linearBinsInterpolation(float phi, float bandwidth, int bins) {
+        auto clbin = (phi / bandwidth) - .5f;
+        auto distance = phi - bandwidth * (std::floor(clbin) + std::copysignf(.5f, clbin));
+        auto lbin = clbin < 1e-8 ? bins - 1 : (int) floor(clbin);
+
+        return std::pair<int, float>(lbin, (1 - distance / bandwidth));
+    }
 }
 
 descriptors::Descriptor::Descriptor(detectors::Point point, int size)
@@ -50,12 +58,14 @@ descriptors::Descriptor& descriptors::Descriptor::operator=(const descriptors::D
 
 std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel, int pR, int pC, float angle,
                                                 int histoSize, int histoNums, int bins, float sigma,
-                                                borders::BorderTypes border) {
+                                                borders::BorderTypes border, bool is3LInterp) {
     auto bandwidth = 2 * M_PI / bins;
     auto blockSize = histoSize * histoNums;
     auto hBlockSize = blockSize / 2;
 
-    auto descriptor = std::make_unique<float[]>(histoNums * histoNums * bins);
+    auto descriptorSize = histoNums * histoNums * bins;
+    auto descriptor = std::make_unique<float[]>(descriptorSize);
+    std::fill(descriptor.get(), descriptor.get() + descriptorSize, 0);
 
     auto fCos = std::cos(angle);
     auto fSin = std::sin(angle);
@@ -85,14 +95,35 @@ std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel
                 phi -= 2 * M_PI;
             }
 
-            auto clbin = (phi / bandwidth) - .5f;
-            auto distance = phi - bandwidth * (std::floor(clbin) + std::copysignf(.5f, clbin));
-            auto lbin = clbin < 1e-8 ? bins - 1 : (int) floor(clbin);
+            auto r0 = r / histoSize;
+            auto c0 = c / histoSize;
 
-            auto histoNum = r / histoSize * histoNums + c / histoSize;
+            if(histoNums > 1 && is3LInterp) {
+                for(auto rI = 0; rI <= 1; rI++) {
+                    auto rh = r0 + rI;
+                    rh = (rh < 0 || rh >= histoNums)? rh % histoNums : rh;
+                    auto rw = 1 - std::fabs(r - rh * histoSize + (double) histoSize / 2) / histoSize ;
 
-            descriptor[histoNum * bins + lbin] += (1 - distance / bandwidth) * magnitudeVal;
-            descriptor[histoNum * bins + (lbin + 1) % bins] += distance / bandwidth * magnitudeVal;
+                    for(auto cI = 0; cI <= 1; cI++) {
+                        auto ch = c0 + cI;
+                        ch = (ch < 0 || ch >= histoNums)? ch % histoNums : ch;
+                        auto cw = 1 - std::fabs(c - ch * histoSize + (double) histoSize / 2) / histoSize;
+
+                        auto weight = rw * cw;
+                        auto interp = _linearBinsInterpolation(phi, bandwidth, bins);
+                        auto histoBin = (rh * histoNums + ch) * bins;
+
+                        descriptor[histoBin + interp.first] += weight * interp.second * magnitudeVal;
+                        descriptor[histoBin + (interp.first + 1) % bins] += weight * (1 - interp.second) * magnitudeVal;
+                    }
+                }
+            } else {
+                auto interp = _linearBinsInterpolation(phi, bandwidth, bins);
+                auto histoBin = (r0 * histoNums + c0) * bins;
+
+                descriptor[histoBin + interp.first] += interp.second * magnitudeVal;
+                descriptor[histoBin + (interp.first + 1) % bins] += (1 - interp.second) * magnitudeVal;
+            }
         }
     }
 
@@ -102,7 +133,7 @@ std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel
 std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<detectors::Point>& points,
                                                             const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
                                                             int histoSize, int histoNums, int bins,
-                                                            borders::BorderTypes border) {
+                                                            borders::BorderTypes border, bool is3LInterp) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
     auto blockSize = histoSize * histoNums;
@@ -111,7 +142,8 @@ std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<de
 
     for(const auto &point : points) {
         descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.row, point.col
-                                                                          , 0, histoSize, histoNums, bins, sigma, border)));
+                                                                          , 0, histoSize, histoNums, bins, sigma
+                                                                          , border, is3LInterp)));
     }
 
     return descriptors;
@@ -119,7 +151,7 @@ std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<de
 
 std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
                                                              int histoSize, int histoNums, int bins,
-                                                             borders::BorderTypes border) {
+                                                             borders::BorderTypes border, bool is3LInterp) {
     std::vector<Descriptor> descriptors;
     auto blockSize = histoNums * histoSize;
     auto descriptorSize = histoNums * histoNums * bins;
@@ -132,7 +164,8 @@ std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Po
     for(auto index : peaksIndexes) {
         descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.row, point.col
                                                                           , _parabolic3bfit(base, index) * 2 * M_PI / base.size
-                                                                          , histoSize, histoNums, bins, sigma, border)));
+                                                                          , histoSize, histoNums, bins, sigma
+                                                                          , border, is3LInterp)));
     }
 
     return descriptors;
@@ -141,12 +174,13 @@ std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Po
 std::vector<descriptors::Descriptor> descriptors::rhistogrid(const std::vector<detectors::Point>& points,
                                                              const std::pair<Img, Img>& sobel,
                                                              const NormalizeFunction& norm, int histoSize,
-                                                             int histoNums, int bins, borders::BorderTypes border) {
+                                                             int histoNums, int bins, borders::BorderTypes border,
+                                                             bool is3LInterp) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
 
     for(const auto &point : points) {
-        for(const auto &unnormalized : rhistogrid(point, sobel, histoSize, histoNums, bins, border)) {
+        for(const auto &unnormalized : rhistogrid(point, sobel, histoSize, histoNums, bins, border, is3LInterp)) {
             descriptors.push_back(std::move(norm(unnormalized)));
         }
     }
@@ -156,7 +190,8 @@ std::vector<descriptors::Descriptor> descriptors::rhistogrid(const std::vector<d
 
 std::vector<descriptors::Descriptor> descriptors::shistogrid(const detectors::SPoint& point,
                                                              const std::pair<Img, Img>& sobel, int histoSize,
-                                                             int histoNums, int bins, borders::BorderTypes border) {
+                                                             int histoNums, int bins, borders::BorderTypes border,
+                                                             bool is3LInterp) {
     std::vector<Descriptor> descriptors;
     auto scaleHistoSize = histoSize * (int) std::roundf(point.sigma);
     auto scaleBlockSize = scaleHistoSize * histoNums;
@@ -172,7 +207,8 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const detectors::SP
         descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.localRow, point.localCol
                                                                           , _parabolic3bfit(base, index) * 2 * M_PI / base.size
                                                                           , scaleHistoSize, histoNums, bins
-                                                                          , MAGNITUDE_SIGMA_C * scaleBlockSize, border)));
+                                                                          , MAGNITUDE_SIGMA_C * scaleBlockSize
+                                                                          , border, is3LInterp)));
     }
 
     return descriptors;
@@ -181,7 +217,7 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const detectors::SP
 std::vector<descriptors::Descriptor> descriptors::shistogrid(const std::vector<detectors::SPoint>& points,
                                                              const std::vector<pyramids::Octave>& gpyramid,
                                                              const NormalizeFunction& norm, int histoSize, int histoNums,
-                                                             int bins, borders::BorderTypes border) {
+                                                             int bins, borders::BorderTypes border, bool is3LInterp) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
 
@@ -190,7 +226,7 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const std::vector<d
         auto sobel = filters::sobel(gpyramid[o].layers()[l].img, border);
 
         for(;o == ptIt->octave && l == ptIt->layer && ptIt != end; ptIt++) {
-            for(const auto &unnormalized : shistogrid(*ptIt, sobel, histoSize, histoNums, bins, border)) {
+            for(const auto &unnormalized : shistogrid(*ptIt, sobel, histoSize, histoNums, bins, border, is3LInterp)) {
                 descriptors.push_back(std::move(norm(unnormalized)));
             }
         }

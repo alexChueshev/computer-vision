@@ -20,28 +20,31 @@ namespace pi::descriptors {
 
     std::unique_ptr<float[]> histogrid(const std::pair<Img, Img>& sobel, int pR, int pC, float angle = .0f,
                                        int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
-                                       float sigma = 5, borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       float sigma = 5, borders::BorderTypes border = borders::BORDER_REPLICATE,
+                                       bool is3LInterp = true);
 
     std::vector<Descriptor> histogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
                                       const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
-                                      int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                      int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE,
+                                      bool is3LInterp = false);
 
     std::vector<Descriptor> rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
                                        int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
-                                       borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       borders::BorderTypes border = borders::BORDER_REPLICATE, bool is3LInterp = false);
 
     std::vector<Descriptor> rhistogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
                                        const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE,
-                                       int histoNums = D_HISTO_NUMS, int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       int histoNums = D_HISTO_NUMS, int bins = D_BINS,
+                                       borders::BorderTypes border = borders::BORDER_REPLICATE, bool is3LInterp = false);
 
     std::vector<Descriptor> shistogrid(const detectors::SPoint& point, const std::pair<Img, Img>& sobel,
                                        int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
-                                       borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       borders::BorderTypes border = borders::BORDER_REPLICATE, bool is3LInterp = true);
 
     std::vector<Descriptor> shistogrid(const std::vector<detectors::SPoint>& points,
                                        const std::vector<pyramids::Octave>& gpyramid, const NormalizeFunction& norm,
                                        int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
-                                       borders::BorderTypes border = borders::BORDER_REPLICATE);
+                                       borders::BorderTypes border = borders::BORDER_REPLICATE, bool is3LInterp = true);
 
     Descriptor normalize(Descriptor descriptor);
 
