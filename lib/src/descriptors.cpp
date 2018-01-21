@@ -99,17 +99,25 @@ std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel
             auto c0 = c / histoSize;
 
             if(histoNums > 1 && is3LInterp) {
+                auto hHistoSize = (double) histoSize / 2;
+                auto cr0 = r0 * histoSize + hHistoSize;
+                auto cc0 = c0 * histoSize + hHistoSize;
+
                 for(auto rI = 0; rI <= 1; rI++) {
-                    auto rh = r0 + rI;
+                    auto rh = r0 + ((r < cr0)? -1 : 1) * rI;
+                    auto rw = 1 - std::fabs(r - rh * histoSize - hHistoSize) / histoSize ;
+
+                    rh += histoNums;
                     rh = (rh < 0 || rh >= histoNums)? rh % histoNums : rh;
-                    auto rw = 1 - std::fabs(r - rh * histoSize + (double) histoSize / 2) / histoSize ;
 
                     for(auto cI = 0; cI <= 1; cI++) {
-                        auto ch = c0 + cI;
-                        ch = (ch < 0 || ch >= histoNums)? ch % histoNums : ch;
-                        auto cw = 1 - std::fabs(c - ch * histoSize + (double) histoSize / 2) / histoSize;
-
+                        auto ch = c0 + ((c < cc0)? -1 : 1) * cI;
+                        auto cw = 1 - std::fabs(c - ch * histoSize - hHistoSize) / histoSize;
                         auto weight = rw * cw;
+
+                        ch += histoNums;
+                        ch = (ch < 0 || ch >= histoNums)? ch % histoNums : ch;
+
                         auto interp = _linearBinsInterpolation(phi, bandwidth, bins);
                         auto histoBin = (rh * histoNums + ch) * bins;
 
