@@ -181,7 +181,7 @@ std::vector<descriptors::Descriptor> descriptors::rhistogrid(const std::vector<d
 
     for(const auto &point : points) {
         for(const auto &unnormalized : rhistogrid(point, sobel, histoSize, histoNums, bins, border, is3LInterp)) {
-            descriptors.push_back(std::move(norm(unnormalized)));
+            descriptors.push_back(norm(unnormalized));
         }
     }
 
@@ -227,7 +227,7 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const std::vector<d
 
         for(;o == ptIt->octave && l == ptIt->layer && ptIt != end; ptIt++) {
             for(const auto &unnormalized : shistogrid(*ptIt, sobel, histoSize, histoNums, bins, border, is3LInterp)) {
-                descriptors.push_back(std::move(norm(unnormalized)));
+                descriptors.push_back(norm(unnormalized));
             }
         }
     }
