@@ -174,7 +174,7 @@ void l7() {
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("../examples/lr7/affine/Lenna6.png")));
+                        utils::load("/home/alexander/Lenna.png")));
     auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
     auto dog2 = pyramids::dog(gpyramid2);
     auto points2 = detectors::shiTomasi(dog2, detectors::blobs(dog2), 25e-5f);
@@ -188,5 +188,5 @@ void l7() {
                                                              , .62f));
 
     utils::render("matches", matchImage);
-    utils::save("../examples/lr7/affine/Lenna6_matches", matchImage, "png", false);
+    utils::save("../examples/lr7/matches", matchImage);
 }
