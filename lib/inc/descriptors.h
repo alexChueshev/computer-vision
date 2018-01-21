@@ -41,10 +41,10 @@ namespace pi::descriptors {
                                        int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
                                        borders::BorderTypes border = borders::BORDER_REPLICATE, bool is3LInterp = true);
 
-    std::vector<Descriptor> shistogrid(const std::vector<detectors::SPoint>& points,
-                                       const std::vector<pyramids::Octave>& gpyramid, const NormalizeFunction& norm,
-                                       int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
-                                       borders::BorderTypes border = borders::BORDER_REPLICATE, bool is3LInterp = true);
+    std::vector<Descriptor> siDescriptors(const std::vector<detectors::SPoint>& points, const std::vector<pyramids::Octave>& gpyramid,
+                                          const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
+                                          int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE,
+                                          bool is3LInterp = true);
 
     Descriptor normalize(Descriptor descriptor);
 

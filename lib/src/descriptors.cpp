@@ -212,10 +212,10 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const detectors::SP
     return descriptors;
 }
 
-std::vector<descriptors::Descriptor> descriptors::shistogrid(const std::vector<detectors::SPoint>& points,
-                                                             const std::vector<pyramids::Octave>& gpyramid,
-                                                             const NormalizeFunction& norm, int histoSize, int histoNums,
-                                                             int bins, borders::BorderTypes border, bool is3LInterp) {
+std::vector<descriptors::Descriptor> descriptors::siDescriptors(const std::vector<detectors::SPoint>& points,
+                                                                const std::vector<pyramids::Octave>& gpyramid,
+                                                                const NormalizeFunction& norm, int histoSize, int histoNums,
+                                                                int bins, borders::BorderTypes border, bool is3LInterp) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
 

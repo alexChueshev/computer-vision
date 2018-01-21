@@ -144,16 +144,16 @@ void l6() {
     auto mImage2 = utils::addBlobsTo(image2, points2);
 
     auto matchImage = utils::drawMatches(mImage2, mImage1,
-                                          descriptors::match(descriptors::shistogrid(points2, gpyramid2, normalize
-                                                                                     , descriptors::D_HISTO_SIZE
-                                                                                     , descriptors::D_HISTO_NUMS
-                                                                                     , descriptors::D_BINS
-                                                                                     , borders::BORDER_REPLICATE, false),
-                                                             descriptors::shistogrid(points1, gpyramid1, normalize
-                                                                                     , descriptors::D_HISTO_SIZE
-                                                                                     , descriptors::D_HISTO_NUMS
-                                                                                     , descriptors::D_BINS
-                                                                                     , borders::BORDER_REPLICATE, false)
+                                          descriptors::match(descriptors::siDescriptors(points2, gpyramid2, normalize
+                                                                                        , descriptors::D_HISTO_SIZE
+                                                                                        , descriptors::D_HISTO_NUMS
+                                                                                        , descriptors::D_BINS
+                                                                                        , borders::BORDER_REPLICATE, false),
+                                                             descriptors::siDescriptors(points1, gpyramid1, normalize
+                                                                                        , descriptors::D_HISTO_SIZE
+                                                                                        , descriptors::D_HISTO_NUMS
+                                                                                        , descriptors::D_BINS
+                                                                                        , borders::BORDER_REPLICATE, false)
                                                              , .62f));
 
     utils::render("matches", matchImage);
@@ -183,8 +183,8 @@ void l7() {
     auto mImage2 = utils::addBlobsTo(image2, points2);
 
     auto matchImage = utils::drawMatches(mImage2, mImage1,
-                                          descriptors::match(descriptors::shistogrid(points2, gpyramid2, normalize),
-                                                             descriptors::shistogrid(points1, gpyramid1, normalize), .6f));
+                                          descriptors::match(descriptors::siDescriptors(points2, gpyramid2, normalize),
+                                                             descriptors::siDescriptors(points1, gpyramid1, normalize), .6f));
 
     utils::render("matches", matchImage);
     utils::save("../examples/lr7/matches", matchImage);
