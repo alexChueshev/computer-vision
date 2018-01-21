@@ -141,9 +141,8 @@ std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<de
     auto descriptorSize = histoNums * histoNums * bins;
 
     for(const auto &point : points) {
-        descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.row, point.col
-                                                                          , 0, histoSize, histoNums, bins, sigma
-                                                                          , border, is3LInterp)));
+        descriptors.emplace_back(point, descriptorSize, histogrid(sobel, point.row, point.col, 0, histoSize
+                                                                  , histoNums, bins, sigma, border, is3LInterp));
     }
 
     return descriptors;
@@ -162,10 +161,9 @@ std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Po
     auto peaksIndexes = peaks(base, ORI_PEAK_RATIO, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.row, point.col
-                                                                          , _parabolic3bfit(base, index) * 2 * M_PI / base.size
-                                                                          , histoSize, histoNums, bins, sigma
-                                                                          , border, is3LInterp)));
+        descriptors.emplace_back(point, descriptorSize, histogrid(sobel, point.row, point.col
+                                                                  , _parabolic3bfit(base, index) * 2 * M_PI / base.size
+                                                                  , histoSize, histoNums, bins, sigma, border, is3LInterp));
     }
 
     return descriptors;
@@ -204,11 +202,11 @@ std::vector<descriptors::Descriptor> descriptors::shistogrid(const detectors::SP
     auto peaksIndexes = peaks(base, ORI_PEAK_RATIO, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.push_back(Descriptor(point, descriptorSize, histogrid(sobel, point.localRow, point.localCol
-                                                                          , _parabolic3bfit(base, index) * 2 * M_PI / base.size
-                                                                          , scaleHistoSize, histoNums, bins
-                                                                          , MAGNITUDE_SIGMA_C * scaleBlockSize
-                                                                          , border, is3LInterp)));
+        descriptors.emplace_back(point, descriptorSize, histogrid(sobel, point.localRow, point.localCol
+                                                                  , _parabolic3bfit(base, index) * 2 * M_PI / base.size
+                                                                  , scaleHistoSize, histoNums, bins
+                                                                  , MAGNITUDE_SIGMA_C * scaleBlockSize
+                                                                  , border, is3LInterp));
     }
 
     return descriptors;
