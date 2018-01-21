@@ -130,10 +130,10 @@ std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel
     return descriptor;
 }
 
-std::vector<descriptors::Descriptor> descriptors::histogrid(const std::vector<detectors::Point>& points,
-                                                            const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
-                                                            int histoSize, int histoNums, int bins,
-                                                            borders::BorderTypes border, bool is3LInterp) {
+std::vector<descriptors::Descriptor> descriptors::bDescriptors(const std::vector<detectors::Point>& points,
+                                                               const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
+                                                               int histoSize, int histoNums, int bins,
+                                                               borders::BorderTypes border, bool is3LInterp) {
     std::vector<Descriptor> descriptors;
     descriptors.reserve(points.size());
     auto blockSize = histoSize * histoNums;

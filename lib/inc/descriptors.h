@@ -23,10 +23,10 @@ namespace pi::descriptors {
                                        float sigma = 5, borders::BorderTypes border = borders::BORDER_REPLICATE,
                                        bool is3LInterp = true);
 
-    std::vector<Descriptor> histogrid(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
-                                      const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
-                                      int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE,
-                                      bool is3LInterp = false);
+    std::vector<Descriptor> bDescriptors(const std::vector<detectors::Point>& points, const std::pair<Img, Img>& sobel,
+                                         const NormalizeFunction& norm, int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS,
+                                         int bins = D_BINS, borders::BorderTypes border = borders::BORDER_REPLICATE,
+                                         bool is3LInterp = false);
 
     std::vector<Descriptor> rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
                                        int histoSize = D_HISTO_SIZE, int histoNums = D_HISTO_NUMS, int bins = D_BINS,
