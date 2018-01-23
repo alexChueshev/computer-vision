@@ -27,11 +27,11 @@ namespace utils {
 
     cv::Mat convertToMat(const pi::Img& src);
 
-    cv::Mat drawMatches(const pi::Img& src1, const pi::Img& src2, const std::vector<std::pair<
+    cv::Mat drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
                         pi::descriptors::Descriptor, pi::descriptors::Descriptor>>& matches);
 
     cv::Mat drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
-                        pi::descriptors::Descriptor, pi::descriptors::Descriptor>>& matches);
+                        pi::detectors::Point, pi::detectors::Point>>& matches);
 
     pi::Img convertTo3Ch(const pi::Img& src);
 
@@ -42,6 +42,14 @@ namespace utils {
     float euclidDistance(int x1, int x2, int y1, int y2);
 
     float radius(const pi::Img& img);
+
+    template<typename T>
+    cv::Mat drawMatches(const pi::Img& src1, const pi::Img& src2, const std::vector<std::pair<T, T>>& matches) {
+        assert(src1.channels() == 1);
+        assert(src2.channels() == 1);
+
+        return drawMatches(convertToMat(convertTo3Ch(src1)), convertToMat(convertTo3Ch(src2)), matches);
+    }
 }
 
 #endif // COMPUTER_VISION_UTILS_H
