@@ -10,7 +10,8 @@ add_library(lib
         src/img.cpp inc/img.h
         src/pyramid.cpp inc/pyramid.h
         src/detectors.cpp inc/detectors.h
-        src/descriptors.cpp inc/descriptors.h)
+        src/descriptors.cpp inc/descriptors.h
+        src/transforms.cpp inc/transforms.h)
 
 find_package(GSL REQUIRED)
 target_link_libraries(lib GSL::gsl GSL::gslcblas)
