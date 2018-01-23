@@ -19,6 +19,8 @@ void l6();
 
 void l7();
 
+void l8();
+
 int main() {
     //l1();
     //l2();
@@ -27,6 +29,7 @@ int main() {
     //l5();
     //l6();
     l7();
+    l8();
 
     return 0;
 }
@@ -87,12 +90,13 @@ void l4() {
                         utils::load("/home/alexander/Lenna.png")));
 
     auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match(descriptors::bDescriptors(detectors::harris(image2),
-                                                                 filters::sobel(image2, borders::BORDER_REFLECT),
-                                                                 normalize),
-                                                            descriptors::bDescriptors(detectors::harris(image1),
-                                                                 filters::sobel(image1, borders::BORDER_REFLECT),
-                                                                 normalize)));
+                                         descriptors::match<detectors::Point>(
+                                               descriptors::bDescriptors(detectors::harris(image2),
+                                                    filters::sobel(image2, borders::BORDER_REFLECT),
+                                                    normalize),
+                                               descriptors::bDescriptors(detectors::harris(image1),
+                                                    filters::sobel(image1, borders::BORDER_REFLECT),
+                                                    normalize)));
     utils::render("matches", matchImage);
     utils::save("../examples/lr4/matches", matchImage);
 }
@@ -111,12 +115,13 @@ void l5() {
                         utils::load("/home/alexander/Lenna.png")));
 
     auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match(descriptors::riDescriptors(detectors::harris(image2, 5, .015f),
-                                                                 filters::sobel(image2, borders::BORDER_REFLECT),
-                                                                 normalize),
-                                                            descriptors::riDescriptors(detectors::harris(image1, 5, .015f),
-                                                                 filters::sobel(image1, borders::BORDER_REFLECT),
-                                                                 normalize), .55f));
+                                         descriptors::match<detectors::Point>(
+                                                descriptors::riDescriptors(detectors::harris(image2, 5, .015f),
+                                                     filters::sobel(image2, borders::BORDER_REFLECT),
+                                                     normalize),
+                                                descriptors::riDescriptors(detectors::harris(image1, 5, .015f),
+                                                     filters::sobel(image1, borders::BORDER_REFLECT),
+                                                     normalize), .55f));
     utils::render("matches", matchImage);
     utils::save("../examples/lr5/matches", matchImage);
 }
@@ -144,17 +149,18 @@ void l6() {
     auto mImage2 = utils::addBlobsTo(image2, points2);
 
     auto matchImage = utils::drawMatches(mImage2, mImage1,
-                                          descriptors::match(descriptors::siDescriptors(points2, gpyramid2, normalize
-                                                                                        , descriptors::D_HISTO_SIZE
-                                                                                        , descriptors::D_HISTO_NUMS
-                                                                                        , descriptors::D_BINS
-                                                                                        , borders::BORDER_REPLICATE, false),
-                                                             descriptors::siDescriptors(points1, gpyramid1, normalize
-                                                                                        , descriptors::D_HISTO_SIZE
-                                                                                        , descriptors::D_HISTO_NUMS
-                                                                                        , descriptors::D_BINS
-                                                                                        , borders::BORDER_REPLICATE, false)
-                                                             , .62f));
+                                          descriptors::match<detectors::Point>(
+                                                 descriptors::siDescriptors(points2, gpyramid2, normalize
+                                                                            , descriptors::D_HISTO_SIZE
+                                                                            , descriptors::D_HISTO_NUMS
+                                                                            , descriptors::D_BINS
+                                                                            , borders::BORDER_REPLICATE, false),
+                                                 descriptors::siDescriptors(points1, gpyramid1, normalize
+                                                                            , descriptors::D_HISTO_SIZE
+                                                                            , descriptors::D_HISTO_NUMS
+                                                                            , descriptors::D_BINS
+                                                                            , borders::BORDER_REPLICATE, false)
+                                                 , .62f));
 
     utils::render("matches", matchImage);
     utils::save("../examples/lr6/matches", matchImage);
@@ -174,7 +180,7 @@ void l7() {
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
+                        utils::load("/home/alexander/Lenna10.png")));
     auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
     auto dog2 = pyramids::dog(gpyramid2);
     auto points2 = detectors::shiTomasi(dog2, detectors::blobs(dog2), 25e-5f);
@@ -183,10 +189,14 @@ void l7() {
     auto mImage2 = utils::addBlobsTo(image2, points2);
 
     auto matchImage = utils::drawMatches(mImage2, mImage1,
-                                          descriptors::match(descriptors::siDescriptors(points2, gpyramid2, normalize)
-                                                             , descriptors::siDescriptors(points1, gpyramid1, normalize)
-                                                             , .62f));
+                                          descriptors::match<detectors::Point>(
+                                                 descriptors::siDescriptors(points2, gpyramid2, normalize)
+                                                 , descriptors::siDescriptors(points1, gpyramid1, normalize)
+                                                 , .62f));
 
     utils::render("matches", matchImage);
     utils::save("../examples/lr7/matches", matchImage);
+}
+
+void l8() {
 }
