@@ -52,9 +52,23 @@ namespace pi::descriptors {
 
     float distance(const Descriptor& descriptor1, const Descriptor& descriptor2);
 
-    std::vector<std::pair<Descriptor, Descriptor>> match(const std::vector<Descriptor>& descriptors1,
-                                                         const std::vector<Descriptor>& descriptors2,
-                                                         float threshold = .7f);
+    template<typename T>
+    std::vector<std::pair<T, T>> match(const std::vector<Descriptor>& descriptors1, const std::vector<Descriptor>& descriptors2,
+                                       const std::function<std::pair<T, T>(Descriptor, Descriptor)>& op, float threshold = .7f);
+
+    template<typename T>
+    std::vector<std::pair<T, T>> match(const std::vector<Descriptor>& descriptors1, const std::vector<Descriptor>& descriptors2,
+                                       float threshold = .7f);
+
+    template<>
+    std::vector<std::pair<Descriptor, Descriptor>> match<Descriptor>(const std::vector<Descriptor>& descriptors1,
+                                                                                  const std::vector<Descriptor>& descriptors2,
+                                                                                  float threshold);
+
+    template<>
+    std::vector<std::pair<detectors::Point, detectors::Point>> match<detectors::Point>(const std::vector<Descriptor>& descriptors1,
+                                                                                       const std::vector<Descriptor>& descriptors2,
+                                                                                       float threshold);
 
     std::vector<int> peaks(const Descriptor& descriptor, float threshold = .8f, int nums = 2);
 }

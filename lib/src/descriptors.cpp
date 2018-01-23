@@ -295,11 +295,12 @@ float descriptors::distance(const Descriptor& descriptor1, const Descriptor& des
     return distance;
 }
 
-std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descriptors::match(
-                                                                            const std::vector<Descriptor>& descriptors1,
-                                                                            const std::vector<Descriptor>& descriptors2,
-                                                                            float threshold) {
-    std::vector<std::pair<Descriptor, Descriptor>> matches;
+template<typename T>
+std::vector<std::pair<T, T>> descriptors::match(const std::vector<Descriptor>& descriptors1,
+                                                const std::vector<Descriptor>& descriptors2,
+                                                const std::function<std::pair<T, T>(Descriptor, Descriptor)>& op,
+                                                float threshold) {
+    std::vector<std::pair<T, T>> matches;
 
     for(const auto &descriptor1 : descriptors1) {
         auto minDistance1 = FLT_MAX, minDistance2 = FLT_MAX;
@@ -318,9 +319,29 @@ std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descrip
         }
 
         if(minDistance1 / minDistance2 <= threshold) {
-            matches.push_back(std::pair<Descriptor, Descriptor>(descriptor1, descriptors2[index]));
+            matches.push_back(op(descriptor1, descriptors2[index]));
         }
     }
 
     return matches;
+}
+
+template<>
+std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descriptors::match<descriptors::Descriptor>(
+                                                                                    const std::vector<Descriptor>& descriptors1,
+                                                                                    const std::vector<Descriptor>& descriptors2,
+                                                                                    float threshold) {
+    return match<Descriptor>(descriptors1, descriptors2, [](auto d1, auto d2) {
+        return std::pair<Descriptor, Descriptor>(std::move(d1), std::move(d2));
+    }, threshold);
+}
+
+template<>
+std::vector<std::pair<detectors::Point, detectors::Point>> descriptors::match<detectors::Point>(
+                                                                              const std::vector<Descriptor>& descriptors1,
+                                                                              const std::vector<Descriptor>& descriptors2,
+                                                                              float threshold) {
+    return match<detectors::Point>(descriptors1, descriptors2, [](const auto& d1, const auto& d2) {
+        return std::pair<detectors::Point, detectors::Point>(d1.point, d2.point);
+    }, threshold);
 }
