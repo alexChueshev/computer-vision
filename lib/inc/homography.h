@@ -10,7 +10,7 @@
 
 namespace pi::transforms::t_homography {
     constexpr float H_THRESHOLD = 4.5f;
-    constexpr int H_ITERS = 2000;
+    constexpr int H_ITERS = 1200;
     constexpr int H_SIZE = 3;
 }
 
