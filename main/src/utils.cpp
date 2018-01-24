@@ -66,6 +66,20 @@ cv::Mat utils::convertToMat(const Img& src) {
     return cv::Mat(src.height(), src.width(), type, const_cast<float*>(src.data())).clone();
 }
 
+cv::Mat utils::convertToMat(const transforms::Transform2d& transform2d) {
+    cv::Mat dst(transform2d.size(), transform2d[0].size(), CV_32F);
+
+    for(auto i = 0, rows = dst.rows; i < rows; i++) {
+        auto* ptr = dst.ptr<float>(i);
+
+        for(auto j = 0, cols = dst.cols; j < cols; j++) {
+            ptr[j] = transform2d[i][j];
+        }
+    }
+
+    return dst;
+}
+
 cv::Mat utils::drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
                            descriptors::Descriptor, descriptors::Descriptor>>& matches) {
     assert(src1.type() == CV_32FC3);

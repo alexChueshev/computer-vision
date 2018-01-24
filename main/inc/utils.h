@@ -7,6 +7,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include <descriptors.h>
+#include <homography.h>
 
 #include <iomanip>
 #include <ctime>
@@ -26,6 +27,8 @@ namespace utils {
               const std::string& ext = "png", bool addTime = true);
 
     cv::Mat convertToMat(const pi::Img& src);
+
+    cv::Mat convertToMat(const pi::transforms::Transform2d& transform2d);
 
     cv::Mat drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
                         pi::descriptors::Descriptor, pi::descriptors::Descriptor>>& matches);
