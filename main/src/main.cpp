@@ -206,13 +206,13 @@ void l8() {
 
     auto image1 = opts::normalize(
                     opts::grayscale(
-                        utils::load("../examples/lr8/pano6/panorama_1.jpg")));
+                        utils::load("/home/alexander/panorama_1.jpg")));
     auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
     auto dog1 = pyramids::dog(gpyramid1);
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("../examples/lr8/pano6/panorama_2.jpg")));
+                        utils::load("/home/alexander/panorama_2.jpg")));
     auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
     auto dog2 = pyramids::dog(gpyramid2);
 
@@ -233,6 +233,6 @@ void l8() {
     auto pano = utils::simpleStitching({utils::applyTransform(image2, transform2d, width, height)}
                                        , image1, width, height);
 
-    utils::render("matches", pano);
-    utils::save("../examples/lr8/pano6/result", pano);
+    utils::render("pano", pano);
+    utils::save("../examples/lr8/result", pano);
 }
