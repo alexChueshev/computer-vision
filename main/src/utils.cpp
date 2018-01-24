@@ -124,6 +124,14 @@ cv::Mat utils::drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::
     return dst;
 }
 
+cv::Mat utils::applyTransform(const Img& src, const transforms::Transform2d& transform2d, int width, int height) {
+    cv::Mat warp;
+
+    cv::warpPerspective(convertToMat(src), warp, convertToMat(transform2d), cv::Size(width, height));
+
+    return warp;
+}
+
 Img utils::addPointsTo(const Img& src, const std::vector<detectors::Point>& points) {
     assert(src.channels() == 1);
 
