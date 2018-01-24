@@ -132,6 +132,19 @@ cv::Mat utils::applyTransform(const Img& src, const transforms::Transform2d& tra
     return warp;
 }
 
+cv::Mat utils::simpleStitching(const std::vector<cv::Mat>& warps, const Img& src, int width, int height) {
+    cv::Mat dst(height, width, CV_32FC1);
+
+    cv::Mat roi(dst, cv::Rect(0, 0, src.width(), src.height()));
+    for(const auto &warp : warps) {
+        cv::Mat wroi(dst, cv::Rect(0, 0, warp.cols, warp.rows));
+        warp.copyTo(wroi);
+    }
+    convertToMat(src).copyTo(roi);
+
+    return dst;
+}
+
 Img utils::addPointsTo(const Img& src, const std::vector<detectors::Point>& points) {
     assert(src.channels() == 1);
 

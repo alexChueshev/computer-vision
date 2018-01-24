@@ -1,5 +1,6 @@
 #include <pyramid.h>
 #include <descriptors.h>
+#include <homography.h>
 
 #include <utils.h>
 
@@ -28,7 +29,7 @@ int main() {
     //l4();
     //l5();
     //l6();
-    l7();
+    //l7();
     l8();
 
     return 0;
@@ -180,7 +181,7 @@ void l7() {
 
     auto image2 = opts::normalize(
                     opts::grayscale(
-                        utils::load("/home/alexander/Lenna10.png")));
+                        utils::load("/home/alexander/Lenna.png")));
     auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
     auto dog2 = pyramids::dog(gpyramid2);
     auto points2 = detectors::shiTomasi(dog2, detectors::blobs(dog2), 25e-5f);
@@ -199,4 +200,39 @@ void l7() {
 }
 
 void l8() {
+    auto normalize = [](const descriptors::Descriptor& descriptor) {
+        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
+    };
+
+    auto image1 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("../examples/lr8/pano6/panorama_1.jpg")));
+    auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
+    auto dog1 = pyramids::dog(gpyramid1);
+
+    auto image2 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("../examples/lr8/pano6/panorama_2.jpg")));
+    auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
+    auto dog2 = pyramids::dog(gpyramid2);
+
+    auto transform2d = transforms::homography(descriptors::match<detectors::Point>(
+                                                     descriptors::siDescriptors(
+                                                            detectors::shiTomasi(dog2, detectors::blobs(dog2)
+                                                                                 , 25e-5f)
+                                                            , gpyramid2, normalize)
+                                                     , descriptors::siDescriptors(
+                                                            detectors::shiTomasi(dog1, detectors::blobs(dog1)
+                                                                                 , 25e-5f)
+                                                            , gpyramid1, normalize)
+                                                     , .62f));
+
+    auto width = image1.width() + image2.width();
+    auto height = image1.height() + image2.height();
+
+    auto pano = utils::simpleStitching({utils::applyTransform(image2, transform2d, width, height)}
+                                       , image1, width, height);
+
+    utils::render("matches", pano);
+    utils::save("../examples/lr8/pano6/result", pano);
 }

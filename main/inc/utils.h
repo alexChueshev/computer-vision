@@ -39,6 +39,9 @@ namespace utils {
     cv::Mat applyTransform(const pi::Img& src, const pi::transforms::Transform2d& transform2d,
                            int width, int height);
 
+    cv::Mat simpleStitching(const std::vector<cv::Mat>& warps, const pi::Img& src,
+                            int width, int height);
+
     pi::Img convertTo3Ch(const pi::Img& src);
 
     pi::Img addPointsTo(const pi::Img& src, const std::vector<pi::detectors::Point>& points);
