@@ -198,7 +198,7 @@ std::vector<detectors::SPoint> detectors::blobs(const std::vector<pyramids::Octa
                             blobs.push_back({
                                                  (int)(r * std::pow(2, i)),
                                                  (int)(c * std::pow(2, i)),
-                                                 value,
+                                                 value, 0,
                                                  r, c, i, j,
                                                  layer.sigma,
                                                  layer.sigmaGlobal,

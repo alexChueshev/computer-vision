@@ -80,50 +80,6 @@ cv::Mat utils::convertToMat(const transforms::Transform2d& transform2d) {
     return dst;
 }
 
-cv::Mat utils::drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
-                           descriptors::Descriptor, descriptors::Descriptor>>& matches) {
-    assert(src1.type() == CV_32FC3);
-    assert(src2.type() == CV_32FC3);
-
-    cv::Mat dst(std::max(src1.rows, src2.rows), src1.cols + src2.cols, CV_32FC3);
-
-    //concat images
-    src1.copyTo(cv::Mat(dst, cv::Rect(0, 0, src1.cols, src1.rows)));
-    src2.copyTo(cv::Mat(dst, cv::Rect(src1.cols, 0, src2.cols, src2.rows)));
-
-    //draw lines
-    for(const auto& match : matches) {
-        cv::line(dst,
-                 cv::Point(match.first.point.col, match.first.point.row),
-                 cv::Point(match.second.point.col + src1.cols, match.second.point.row),
-                 cv::Scalar(.0, 1., 1.)); //yellow color
-    }
-
-    return dst;
-}
-
-cv::Mat utils::drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
-                           detectors::Point, detectors::Point>>& matches) {
-    assert(src1.type() == CV_32FC3);
-    assert(src2.type() == CV_32FC3);
-
-    cv::Mat dst(std::max(src1.rows, src2.rows), src1.cols + src2.cols, CV_32FC3);
-
-    //concat images
-    src1.copyTo(cv::Mat(dst, cv::Rect(0, 0, src1.cols, src1.rows)));
-    src2.copyTo(cv::Mat(dst, cv::Rect(src1.cols, 0, src2.cols, src2.rows)));
-
-    //draw lines
-    for(const auto& match : matches) {
-        cv::line(dst,
-                 cv::Point(match.first.col, match.first.row),
-                 cv::Point(match.second.col + src1.cols, match.second.row),
-                 cv::Scalar(.0, 1., 1.)); //yellow color
-    }
-
-    return dst;
-}
-
 cv::Mat utils::applyTransform(const Img& src, const transforms::Transform2d& transform2d, int width, int height) {
     cv::Mat warp;
 

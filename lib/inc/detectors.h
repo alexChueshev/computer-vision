@@ -9,6 +9,8 @@
 namespace pi::detectors {
     struct Point;
 
+    struct RPoint;
+
     struct SPoint;
 
     typedef std::function<float(int, int, int, int)> DistanceFunction;
@@ -49,7 +51,11 @@ struct pi::detectors::Point {
     float value;
 };
 
-struct pi::detectors::SPoint : Point {
+struct pi::detectors::RPoint : Point {
+    float angle;
+};
+
+struct pi::detectors::SPoint : RPoint {
     int localRow;
     int localCol;
     int octave;

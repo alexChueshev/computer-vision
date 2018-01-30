@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <ctime>
 #include <chrono>
+#include <type_traits>
 
 namespace utils {
     pi::Img load(const std::string& path);
@@ -30,12 +31,6 @@ namespace utils {
 
     cv::Mat convertToMat(const pi::transforms::Transform2d& transform2d);
 
-    cv::Mat drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
-                        pi::descriptors::Descriptor, pi::descriptors::Descriptor>>& matches);
-
-    cv::Mat drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<
-                        pi::detectors::Point, pi::detectors::Point>>& matches);
-
     cv::Mat applyTransform(const pi::Img& src, const pi::transforms::Transform2d& transform2d,
                            int width, int height);
 
@@ -52,13 +47,70 @@ namespace utils {
 
     float radius(const pi::Img& img);
 
-    template<typename T>
-    cv::Mat drawMatches(const pi::Img& src1, const pi::Img& src2, const std::vector<std::pair<T, T>>& matches) {
-        assert(src1.channels() == 1);
-        assert(src2.channels() == 1);
+    template<typename Base, typename Derived>
+    using MatchResolvedType = typename std::enable_if_t<std::is_base_of<Base, Derived>::value, cv::Mat>;
 
-        return drawMatches(convertToMat(convertTo3Ch(src1)), convertToMat(convertTo3Ch(src2)), matches);
+    template<typename T> MatchResolvedType<pi::descriptors::BDescriptor, T>
+    drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<T, T>>& matches);
+
+    template<typename T> MatchResolvedType<pi::detectors::Point, T>
+    drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<T, T>>& matches);
+
+    template<typename T>
+    cv::Mat drawMatches(const pi::Img& src1, const pi::Img& src2, const std::vector<std::pair<T, T>>& matches);
+}
+
+template<typename T> utils::MatchResolvedType<pi::descriptors::BDescriptor, T>
+utils::drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<T, T>>& matches) {
+    assert(src1.type() == CV_32FC3);
+    assert(src2.type() == CV_32FC3);
+
+    cv::Mat dst(std::max(src1.rows, src2.rows), src1.cols + src2.cols, CV_32FC3);
+
+    //concat images
+    src1.copyTo(cv::Mat(dst, cv::Rect(0, 0, src1.cols, src1.rows)));
+    src2.copyTo(cv::Mat(dst, cv::Rect(src1.cols, 0, src2.cols, src2.rows)));
+
+    //draw lines
+    for(const auto& match : matches) {
+        cv::line(dst,
+                 cv::Point(match.first.point.col, match.first.point.row),
+                 cv::Point(match.second.point.col + src1.cols, match.second.point.row),
+                 cv::Scalar(.0, 1., 1.)); //yellow color
     }
+
+    return dst;
+}
+
+template<typename T> utils::MatchResolvedType<pi::detectors::Point, T>
+utils::drawMatches(const cv::Mat& src1, const cv::Mat& src2, const std::vector<std::pair<T, T>>& matches) {
+    assert(src1.type() == CV_32FC3);
+    assert(src2.type() == CV_32FC3);
+
+    cv::Mat dst(std::max(src1.rows, src2.rows), src1.cols + src2.cols, CV_32FC3);
+
+    //concat images
+    src1.copyTo(cv::Mat(dst, cv::Rect(0, 0, src1.cols, src1.rows)));
+    src2.copyTo(cv::Mat(dst, cv::Rect(src1.cols, 0, src2.cols, src2.rows)));
+
+    //draw lines
+    for(const auto& match : matches) {
+        cv::line(dst,
+                 cv::Point(match.first.col, match.first.row),
+                 cv::Point(match.second.col + src1.cols, match.second.row),
+                 cv::Scalar(.0, 1., 1.)); //yellow color
+    }
+
+    return dst;
+}
+
+template<typename T>
+cv::Mat utils::drawMatches(const pi::Img& src1, const pi::Img& src2, const std::vector<std::pair<T, T>>& matches) {
+    assert(src1.channels() == 1);
+    assert(src2.channels() == 1);
+
+    return utils::drawMatches(utils::convertToMat(utils::convertTo3Ch(src1)),
+                              utils::convertToMat(utils::convertTo3Ch(src2)), matches);
 }
 
 #endif // COMPUTER_VISION_UTILS_H

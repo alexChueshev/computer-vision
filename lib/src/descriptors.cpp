@@ -3,7 +3,8 @@
 using namespace pi;
 
 namespace {
-    int _parabolic3bfit(const descriptors::Descriptor& descriptor, int peak) {
+    template<typename T>
+    int _parabolic3bfit(const descriptors::Descriptor<T>& descriptor, int peak) {
         assert(peak >= 0 && peak < descriptor.size);
 
         auto ym1 = descriptor.data[(peak - 1) % descriptor.size];
@@ -20,40 +21,6 @@ namespace {
 
         return std::pair<int, float>(lbin, (1 - distance / bandwidth));
     }
-}
-
-descriptors::Descriptor::Descriptor(detectors::Point point, int size)
-    : size(size)
-    , point(std::move(point))
-    , data(std::make_unique<float[]>(size))
-{
-    std::fill(data.get(), data.get() + size, 0);
-}
-
-descriptors::Descriptor::Descriptor(detectors::Point point, int size, std::unique_ptr<float[]> data)
-    : size(size)
-    , point(std::move(point))
-    , data(std::move(data))
-{
-}
-
-descriptors::Descriptor::Descriptor(const descriptors::Descriptor& descriptor)
-    : size(descriptor.size)
-    , point(descriptor.point)
-    , data(std::make_unique<float[]>(size))
-{
-    std::copy(descriptor.data.get(), descriptor.data.get() + size, data.get());
-}
-
-descriptors::Descriptor& descriptors::Descriptor::operator=(const descriptors::Descriptor& descriptor) {
-    if(this != &descriptor) {
-        point = descriptor.point;
-        size = descriptor.size;
-
-        data = std::make_unique<float[]>(size);
-        std::copy(descriptor.data.get(), descriptor.data.get() + size, data.get());
-    }
-    return *this;
 }
 
 std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel, int pR, int pC, float angle,
@@ -138,11 +105,11 @@ std::unique_ptr<float[]> descriptors::histogrid(const std::pair<Img, Img>& sobel
     return descriptor;
 }
 
-std::vector<descriptors::Descriptor> descriptors::bDescriptors(const std::vector<detectors::Point>& points,
-                                                               const std::pair<Img, Img>& sobel, const NormalizeFunction& norm,
-                                                               int histoSize, int histoNums, int bins,
-                                                               borders::BorderTypes border, bool is3LInterp) {
-    std::vector<Descriptor> descriptors;
+std::vector<descriptors::BDescriptor> descriptors::bDescriptors(const std::vector<detectors::Point>& points,
+                                                                const std::pair<Img, Img>& sobel, const BNormalizeFunction& norm,
+                                                                int histoSize, int histoNums, int bins,
+                                                                borders::BorderTypes border, bool is3LInterp) {
+    std::vector<BDescriptor> descriptors;
     descriptors.reserve(points.size());
     auto blockSize = histoSize * histoNums;
     auto sigma = std::log10(blockSize);
@@ -156,33 +123,35 @@ std::vector<descriptors::Descriptor> descriptors::bDescriptors(const std::vector
     return descriptors;
 }
 
-std::vector<descriptors::Descriptor> descriptors::rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
-                                                             int histoSize, int histoNums, int bins,
-                                                             borders::BorderTypes border, bool is3LInterp) {
-    std::vector<Descriptor> descriptors;
+std::vector<descriptors::RiDescriptor> descriptors::rhistogrid(const detectors::Point& point, const std::pair<Img, Img>& sobel,
+                                                               int histoSize, int histoNums, int bins,
+                                                               borders::BorderTypes border, bool is3LInterp) {
+    std::vector<RiDescriptor> descriptors;
     auto blockSize = histoNums * histoSize;
     auto descriptorSize = histoNums * histoNums * bins;
     auto sigma = 5 * std::log10(blockSize);
 
-    Descriptor base(point, 36, histogrid(sobel, point.row, point.col, .0f, blockSize, 1, 36, sigma, border));
+    BDescriptor base(point, 36, histogrid(sobel, point.row, point.col, .0f, blockSize, 1, 36, sigma, border));
 
     auto peaksIndexes = peaks(base, ORI_PEAK_RATIO, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.emplace_back(point, descriptorSize, histogrid(sobel, point.row, point.col
-                                                                  , _parabolic3bfit(base, index) * 2 * M_PI / base.size
-                                                                  , histoSize, histoNums, bins, sigma, border, is3LInterp));
+        auto angle = _parabolic3bfit(base, index) * 2 * M_PI / base.size;
+        detectors::RPoint p{point.row, point.col, point.value, angle};
+        descriptors.emplace_back(std::move(p), descriptorSize, histogrid(sobel, point.row, point.col, angle
+                                                                        , histoSize, histoNums, bins, sigma
+                                                                        , border, is3LInterp));
     }
 
     return descriptors;
 }
 
-std::vector<descriptors::Descriptor> descriptors::riDescriptors(const std::vector<detectors::Point>& points,
-                                                                const std::pair<Img, Img>& sobel,
-                                                                const NormalizeFunction& norm, int histoSize,
-                                                                int histoNums, int bins, borders::BorderTypes border,
-                                                                bool is3LInterp) {
-    std::vector<Descriptor> descriptors;
+std::vector<descriptors::RiDescriptor> descriptors::riDescriptors(const std::vector<detectors::Point>& points,
+                                                                  const std::pair<Img, Img>& sobel,
+                                                                  const RiNormalizeFunction& norm, int histoSize,
+                                                                  int histoNums, int bins, borders::BorderTypes border,
+                                                                  bool is3LInterp) {
+    std::vector<RiDescriptor> descriptors;
     descriptors.reserve(points.size());
 
     for(const auto &point : points) {
@@ -194,37 +163,37 @@ std::vector<descriptors::Descriptor> descriptors::riDescriptors(const std::vecto
     return descriptors;
 }
 
-std::vector<descriptors::Descriptor> descriptors::shistogrid(const detectors::SPoint& point,
-                                                             const std::pair<Img, Img>& sobel, int histoSize,
-                                                             int histoNums, int bins, borders::BorderTypes border,
-                                                             bool is3LInterp) {
-    std::vector<Descriptor> descriptors;
+std::vector<descriptors::SiDescriptor> descriptors::shistogrid(detectors::SPoint point, const std::pair<Img, Img>& sobel, int histoSize,
+                                                               int histoNums, int bins, borders::BorderTypes border,
+                                                               bool is3LInterp) {
+    std::vector<SiDescriptor> descriptors;
     auto scaleHistoSize = histoSize * (int) std::roundf(point.sigma);
     auto scaleBlockSize = scaleHistoSize * histoNums;
     auto descriptorSize = histoNums * histoNums * bins;
 
-    Descriptor base(point, 36, histogrid(sobel, point.localRow, point.localCol
+    SiDescriptor base(point, 36, histogrid(sobel, point.localRow, point.localCol
                                          , .0f, 3 * ORI_SIGMA_C * point.sigma
                                          , 1, 36, ORI_SIGMA_C * point.sigma, border));
 
     auto peaksIndexes = peaks(base, ORI_PEAK_RATIO, 2);
 
     for(auto index : peaksIndexes) {
-        descriptors.emplace_back(point, descriptorSize, histogrid(sobel, point.localRow, point.localCol
-                                                                  , _parabolic3bfit(base, index) * 2 * M_PI / base.size
-                                                                  , scaleHistoSize, histoNums, bins
-                                                                  , MAGNITUDE_SIGMA_C * scaleBlockSize
-                                                                  , border, is3LInterp));
+        auto angle = _parabolic3bfit(base, index) * 2 * M_PI / base.size;
+        point.angle = angle;
+        descriptors.emplace_back(std::move(point), descriptorSize, histogrid(sobel, point.localRow, point.localCol
+                                                                             , angle, scaleHistoSize, histoNums, bins
+                                                                             , MAGNITUDE_SIGMA_C * scaleBlockSize
+                                                                             , border, is3LInterp));
     }
 
     return descriptors;
 }
 
-std::vector<descriptors::Descriptor> descriptors::siDescriptors(const std::vector<detectors::SPoint>& points,
-                                                                const std::vector<pyramids::Octave>& gpyramid,
-                                                                const NormalizeFunction& norm, int histoSize, int histoNums,
-                                                                int bins, borders::BorderTypes border, bool is3LInterp) {
-    std::vector<Descriptor> descriptors;
+std::vector<descriptors::SiDescriptor> descriptors::siDescriptors(const std::vector<detectors::SPoint>& points,
+                                                                  const std::vector<pyramids::Octave>& gpyramid,
+                                                                  const SiNormalizeFunction& norm, int histoSize, int histoNums,
+                                                                  int bins, borders::BorderTypes border, bool is3LInterp) {
+    std::vector<SiDescriptor> descriptors;
     descriptors.reserve(points.size());
 
     for(auto ptIt = std::begin(points), end = std::end(points); ptIt != end;) {
@@ -239,109 +208,4 @@ std::vector<descriptors::Descriptor> descriptors::siDescriptors(const std::vecto
     }
 
     return descriptors;
-}
-
-descriptors::Descriptor descriptors::normalize(Descriptor descriptor) {
-    auto first = descriptor.data.get();
-    auto last = descriptor.data.get() + descriptor.size;
-
-    auto sumSq = std::accumulate(first, last, .0f, [] (auto accumulator, auto value) {
-        return accumulator + value * value;
-    });
-    auto length = std::sqrt(sumSq);
-
-    std::transform(first, last, first, [length] (auto value) {
-        return value / length;
-    });
-
-    return descriptor;
-}
-
-descriptors::Descriptor descriptors::trim(Descriptor descriptor, float threshold) {
-    auto first = descriptor.data.get();
-    auto last = descriptor.data.get() + descriptor.size;
-
-    std::transform(first, last, first, [threshold] (auto value) {
-        return std::min(value, threshold);
-    });
-
-    return descriptor;
-}
-
-std::vector<int> descriptors::peaks(const Descriptor& descriptor, float threshold, int nums) {
-    std::vector<int> positions;
-
-    auto maxValue = std::max_element(descriptor.data.get(), descriptor.data.get() + descriptor.size);
-    auto fIndex = std::distance(descriptor.data.get(), maxValue);
-    positions.push_back(fIndex);
-
-    for(auto i = 0; i < descriptor.size && positions.size() < nums; i++) {
-        if(descriptor.data[i] >= *maxValue * threshold && i != fIndex) {
-            positions.push_back(i);
-        }
-    }
-
-    return positions;
-}
-
-float descriptors::distance(const Descriptor& descriptor1, const Descriptor& descriptor2) {
-    assert(descriptor1.size == descriptor2.size);
-
-    auto distance = .0f;
-    for(auto i = 0; i < descriptor1.size; i++) {
-        distance += std::pow(descriptor1.data[i] - descriptor2.data[i], 2);
-    }
-
-    return distance;
-}
-
-template<typename T>
-std::vector<std::pair<T, T>> descriptors::match(const std::vector<Descriptor>& descriptors1,
-                                                const std::vector<Descriptor>& descriptors2,
-                                                const std::function<std::pair<T, T>(Descriptor, Descriptor)>& op,
-                                                float threshold) {
-    std::vector<std::pair<T, T>> matches;
-
-    for(const auto &descriptor1 : descriptors1) {
-        auto minDistance1 = FLT_MAX, minDistance2 = FLT_MAX;
-        auto index = 0, counter = 0;
-
-        for(const auto &descriptor2 : descriptors2) {
-            auto distance = descriptors::distance(descriptor1, descriptor2);
-            if(distance < minDistance1) {
-                minDistance2 = minDistance1;
-                minDistance1 = distance;
-                index = counter;
-            } else if(distance < minDistance2) {
-                minDistance2 = distance;
-            }
-            counter++;
-        }
-
-        if(minDistance1 / minDistance2 <= threshold) {
-            matches.push_back(op(descriptor1, descriptors2[index]));
-        }
-    }
-
-    return matches;
-}
-
-template<>
-std::vector<std::pair<descriptors::Descriptor, descriptors::Descriptor>> descriptors::match<descriptors::Descriptor>(
-                                                                                    const std::vector<Descriptor>& descriptors1,
-                                                                                    const std::vector<Descriptor>& descriptors2,
-                                                                                    float threshold) {
-    return match<Descriptor>(descriptors1, descriptors2, [](auto d1, auto d2) {
-        return std::pair<Descriptor, Descriptor>(std::move(d1), std::move(d2));
-    }, threshold);
-}
-
-template<>
-std::vector<std::pair<detectors::Point, detectors::Point>> descriptors::match<detectors::Point>(
-                                                                              const std::vector<Descriptor>& descriptors1,
-                                                                              const std::vector<Descriptor>& descriptors2,
-                                                                              float threshold) {
-    return match<detectors::Point>(descriptors1, descriptors2, [](const auto& d1, const auto& d2) {
-        return std::pair<detectors::Point, detectors::Point>(d1.point, d2.point);
-    }, threshold);
 }

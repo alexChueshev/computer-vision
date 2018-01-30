@@ -78,7 +78,7 @@ void l3() {
 }
 
 void l4() {
-    auto normalize = [](const descriptors::Descriptor& descriptor) {
+    auto normalize = [](const auto& descriptor) {
         return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
     };
 
@@ -103,7 +103,7 @@ void l4() {
 }
 
 void l5() {
-    auto normalize = [](const descriptors::Descriptor& descriptor) {
+    auto normalize = [](const auto& descriptor) {
         return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
     };
 
@@ -128,7 +128,7 @@ void l5() {
 }
 
 void l6() {
-    auto normalize = [](const descriptors::Descriptor& descriptor) {
+    auto normalize = [](const auto& descriptor) {
         return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
     };
 
@@ -168,7 +168,7 @@ void l6() {
 }
 
 void l7() {
-    auto normalize = [](const descriptors::Descriptor& descriptor) {
+    auto normalize = [](const auto& descriptor) {
         return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
     };
 
@@ -200,7 +200,7 @@ void l7() {
 }
 
 void l8() {
-    auto normalize = [](const descriptors::Descriptor& descriptor) {
+    auto normalize = [](const auto& descriptor) {
         return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
     };
 
