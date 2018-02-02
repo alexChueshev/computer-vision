@@ -80,6 +80,10 @@ int Img::height() const {
     return _height;
 }
 
+Size Img::dimensions() const {
+    return {_width, _height};
+}
+
 int Img::channels() const {
     return _channels;
 }

@@ -14,7 +14,7 @@ add_library(lib
         src/descriptors.cpp inc/descriptors.h
         src/transforms.cpp inc/transforms.h
         src/homography.cpp inc/homography.h
-        )
+        src/hough.cpp inc/hough.h)
 
 find_package(GSL REQUIRED)
 target_link_libraries(lib GSL::gsl GSL::gslcblas)

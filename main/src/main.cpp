@@ -1,6 +1,6 @@
-#include <pyramid.h>
 #include <descriptors.h>
 #include <homography.h>
+#include <hough.h>
 
 #include <utils.h>
 
@@ -22,6 +22,8 @@ void l7();
 
 void l8();
 
+void l9();
+
 int main() {
     //l1();
     //l2();
@@ -30,7 +32,8 @@ int main() {
     //l5();
     //l6();
     //l7();
-    l8();
+    //l8();
+    l9();
 
     return 0;
 }
@@ -235,4 +238,42 @@ void l8() {
 
     utils::render("pano", pano);
     utils::save("../examples/lr8/result", pano);
+}
+
+void l9() {
+    auto normalize = [](const auto& descriptor) {
+        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
+    };
+
+    auto image1 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/hough/box_in_scene.png")));
+    auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
+    auto dog1 = pyramids::dog(gpyramid1);
+
+    auto image2 = opts::normalize(
+                    opts::grayscale(
+                        utils::load("/home/alexander/hough/box.png")));
+    auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
+    auto dog2 = pyramids::dog(gpyramid2);
+
+    auto transform2d = transforms::hough(image1.dimensions(), image2.dimensions()
+                                         , descriptors::match<detectors::SPoint>(
+                                             descriptors::siDescriptors(
+                                                 detectors::shiTomasi(dog2, detectors::blobs(dog2), 15e-5f)
+                                                 , gpyramid2, normalize)
+                                             , descriptors::siDescriptors(
+                                                 detectors::shiTomasi(dog1, detectors::blobs(dog1), 15e-5f)
+                                                 , gpyramid1, normalize)
+                                             , .65f));
+
+    cv::Rect rect(transform2d.x - image2.width() * transform2d.scale / 2
+             , transform2d.y - image2.height() * transform2d.scale / 2
+             , image2.width() * transform2d.scale
+             , image2.height() * transform2d.scale);
+
+    auto result = utils::convertToMat(utils::convertTo3Ch(image1));
+    cv::rectangle(result, rect, cv::Scalar(.0, 1., 1.));
+
+    utils::render("hough", result);
 }

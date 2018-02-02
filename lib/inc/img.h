@@ -7,10 +7,11 @@
 
 namespace pi {
     class Img;
+
+    struct Size;
 }
 
-class pi::Img
-{
+class pi::Img {
 
 protected:
     int _width;
@@ -50,6 +51,8 @@ public:
 
     int height() const;
 
+    Size dimensions() const;
+
     int channels() const;
 
     int step() const;
@@ -59,6 +62,11 @@ public:
     int dataSize() const;
 
     ~Img() = default;
+};
+
+struct pi::Size {
+    int width;
+    int height;
 };
 
 #endif // COMPUTER_VISION_IMG_H

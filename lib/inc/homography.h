@@ -1,7 +1,7 @@
 #ifndef COMPUTER_VISION_HOMOGRAPHY_H
 #define COMPUTER_VISION_HOMOGRAPHY_H
 
-#include <detectors.h>
+#include <transforms.h>
 
 #include <random>
 
@@ -12,14 +12,12 @@ namespace pi::transforms::t_homography {
     constexpr float H_THRESHOLD = 4.5f;
     constexpr int H_ITERS = 1200;
     constexpr int H_SIZE = 3;
+
+    typedef std::pair<detectors::Point, detectors::Point> PPairs;
 }
 
 namespace pi::transforms {
-    typedef std::array<float, t_homography::H_SIZE> Transform1d;
-    typedef std::array<Transform1d, t_homography::H_SIZE> Transform2d;
-    typedef std::pair<detectors::Point, detectors::Point> PPairs;
-
-    Transform2d homography(const std::vector<PPairs>& matches,
+    Transform2d homography(const std::vector<t_homography::PPairs>& matches,
                            float threshold = t_homography::H_THRESHOLD,
                            int iters = t_homography::H_ITERS);
 }
