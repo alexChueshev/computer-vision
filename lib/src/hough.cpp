@@ -3,7 +3,7 @@
 using namespace pi;
 
 namespace {
-    struct Bin {
+    struct _Bin {
         int xBin;
         int yBin;
         int aBin;
@@ -11,11 +11,11 @@ namespace {
     };
 }
 
-transforms::t_hough::Hough transforms::hough(Size imgSize, Size objSize, const std::vector<t_hough::PPairs>& pairs,
-                                             float scMin, int scBins, float scFactor, float lcCoeff, int orntBins) {
+transforms::Transform2d transforms::hough(Size imgSize, Size objSize, const std::vector<SPPairs>& pairs,
+                                          float scMin, int scBins, float scFactor, float lcCoeff, int orntBins) {
     assert(imgSize.width > 0 && imgSize.height > 0);
     assert(objSize.width > 0 && objSize.height > 0);
-    assert(pairs.size() > 2);
+    assert(pairs.size() >= 3);
     assert(scMin > 0 && scBins > 0 && scFactor > 0);
     assert(lcCoeff > 0 && orntBins > 0);
 
@@ -38,7 +38,7 @@ transforms::t_hough::Hough transforms::hough(Size imgSize, Size objSize, const s
         return b1.xBin * yBins * subWidth + b1.yBin * subWidth + b1.aBin * scBins + b1.scBin
                 < b2.xBin * yBins * subWidth + b2.yBin * subWidth + b2.aBin * scBins + b2.scBin;
     };
-    std::map<Bin, std::vector<t_hough::PPairs>, decltype (binComparator)> bins(binComparator);
+    std::map<_Bin, std::vector<SPPairs>, decltype (binComparator)> bins(binComparator);
 
     for(const auto &pair: pairs) {
         const auto &fPoint = pair.first;
@@ -59,9 +59,11 @@ transforms::t_hough::Hough transforms::hough(Size imgSize, Size objSize, const s
         auto aBin = angle / orntBandwidth;
         auto laBin = (int) std::floor(aBin);
 
-        auto scBinVal = std::find_if(firstScale, lastScale, [scale](auto level) { return level >= scale; });
+        auto scBinVal = std::find_if(firstScale, lastScale, [scale, scFactor](auto level) {
+            return level <= scale && scale < level * scFactor;
+        });
         auto lscBin = std::distance(firstScale, *&scBinVal);
-        if(lscBin == scBins) continue;
+        if(lscBin >= scBins) continue;
 
         for(auto ix = 0; ix <= 1; ix++) {
             auto ixBin = lxBin + (xBin - lxBin >= .5f ?  1 : -1) * ix;
@@ -79,12 +81,12 @@ transforms::t_hough::Hough transforms::hough(Size imgSize, Size objSize, const s
                         auto iscBin = lscBin + (((*scBinVal + scFactor * *scBinVal) / 2) <= scale ?  1 : -1) * isc;
                         if(iscBin < 0 || iscBin >= scBins) continue;
 
-                        Bin bin{ixBin, iyBin, iaBin, iscBin};
+                        _Bin bin{ixBin, iyBin, iaBin, iscBin};
                         auto bIt = bins.find(bin);
                         if(bIt != bins.end()) {
                             bIt->second.push_back(pair);
                         } else {
-                            bins.insert(std::pair<Bin, std::vector<t_hough::PPairs>>(bin, {pair}));
+                            bins.insert(std::pair<_Bin, std::vector<SPPairs>>(bin, {pair}));
                         }
                     }
                 }
@@ -92,12 +94,24 @@ transforms::t_hough::Hough transforms::hough(Size imgSize, Size objSize, const s
         }
     }
 
-    auto maxBin = std::max_element(std::begin(bins), std::end(bins), [](const auto &b1, const auto &b2) {
-        return b1.second.size() < b2.second.size();
-    })->first;
+    std::vector<SPPairs> inliers;
+    auto bestInliersCount = inliers.size();
 
-    return {(maxBin.xBin + .5f) * lcBandwidth
-                , (maxBin.yBin + .5f) * lcBandwidth
-                , (maxBin.aBin + .5f) * orntBandwidth
-                , (scales[maxBin.scBin] + scales[maxBin.scBin] * scFactor) / 2 };
+    for(const auto &bin : bins) {
+        if(bin.second.size() < 3) continue;
+
+        auto tmp = transforms::inliers(dltAffine(bin.second), pairs, lcBandwidth / 2);
+        auto tmpSize = tmp.size();
+
+        if(tmpSize > bestInliersCount) {
+            bestInliersCount = tmpSize;
+            inliers.swap(tmp);
+        }
+    }
+
+    if(bestInliersCount < 3) {
+        return Transform2d{};
+    }
+
+    return dltAffine(inliers);
 }

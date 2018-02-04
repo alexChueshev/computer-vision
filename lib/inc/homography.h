@@ -1,25 +1,46 @@
 #ifndef COMPUTER_VISION_HOMOGRAPHY_H
 #define COMPUTER_VISION_HOMOGRAPHY_H
 
-#include <transforms.h>
+#include <transforms.tpp>
 
 #include <random>
-
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_blas.h>
 
 namespace pi::transforms::t_homography {
     constexpr float H_THRESHOLD = 4.5f;
     constexpr int H_ITERS = 1200;
-    constexpr int H_SIZE = 3;
-
-    typedef std::pair<detectors::Point, detectors::Point> PPairs;
 }
 
 namespace pi::transforms {
-    Transform2d homography(const std::vector<t_homography::PPairs>& matches,
+    template<typename T>
+    Transform2d homography(const std::vector<PPairs<T>>& matches,
                            float threshold = t_homography::H_THRESHOLD,
                            int iters = t_homography::H_ITERS);
+}
+
+template<typename T>
+pi::transforms::Transform2d pi::transforms::homography(const std::vector<PPairs<T>>& matches,
+                                                       float threshold, int iters) {
+    assert(matches.size() >= 4);
+
+    std::vector<PPairs<T>> pairs;
+    std::vector<PPairs<T>> inliers;
+    auto bestInliersCount = inliers.size();
+    std::mt19937 rand{std::random_device{}()};
+
+    for(auto i = 0; i < iters; i++) {
+        pairs.clear();
+        std::sample(std::begin(matches), std::end(matches), std::back_inserter(pairs), 4, rand);
+
+        auto tmp = transforms::inliers(dltHomography(pairs), matches, threshold);
+        auto tmpSize = tmp.size();
+
+        if(tmpSize > bestInliersCount) {
+            bestInliersCount = tmpSize;
+            inliers.swap(tmp);
+        }
+    }
+
+    return dltHomography(inliers);
 }
 
 #endif //COMPUTER_VISION_HOMOGRAPHY_H
