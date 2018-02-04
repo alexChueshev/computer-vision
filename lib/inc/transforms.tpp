@@ -33,12 +33,18 @@ pi::transforms::Transform2d pi::transforms::dltHomography(const std::vector<PPai
     auto size = pairs.size();
     auto width = T_SIZE * T_SIZE;
 
-    auto* A = gsl_matrix_alloc(2 * size, width);
-    auto* B = gsl_matrix_alloc(width, width);
-    auto* U = gsl_matrix_alloc(width, width);
+    double dataB[width * width];
+    double dataU[width * width];
 
-    auto* S = gsl_vector_alloc(width);
-    auto* P = gsl_vector_alloc(width);
+    auto* A = gsl_matrix_alloc(2 * size, width);
+    auto B = gsl_matrix_view_array(dataB, width, width);
+    auto U = gsl_matrix_view_array(dataU, width, width);
+
+    double dataS[width];
+    double dataP[width];
+
+    auto S = gsl_vector_view_array(dataS, width);
+    auto P = gsl_vector_view_array(dataP, width);
 
     for(auto i = 0; i < size; i++) {
         const auto &pair = pairs[i];
@@ -61,11 +67,11 @@ pi::transforms::Transform2d pi::transforms::dltHomography(const std::vector<PPai
         }
     }
 
-    gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, A, A, 0.0, B);
-    gsl_linalg_SV_decomp(B, U, S, P);
+    gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, A, A, 0.0, &B.matrix);
+    gsl_linalg_SV_decomp(&B.matrix, &U.matrix, &S.vector, &P.vector);
 
     Transform2d h;
-    auto gslH = gsl_matrix_column(U, gsl_vector_min_index(S)).vector;
+    auto gslH = gsl_matrix_column(&U.matrix, gsl_vector_min_index(&S.vector)).vector;
     auto div = gsl_vector_get(&gslH, width - 1);
 
     for(auto i = 0; i < T_SIZE; i++) {
@@ -75,11 +81,6 @@ pi::transforms::Transform2d pi::transforms::dltHomography(const std::vector<PPai
     }
 
     gsl_matrix_free(A);
-    gsl_matrix_free(B);
-    gsl_matrix_free(U);
-
-    gsl_vector_free(S);
-    gsl_vector_free(P);
 
     return h;
 }
