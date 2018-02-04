@@ -260,20 +260,22 @@ void l9() {
     auto transform2d = transforms::hough(image1.dimensions(), image2.dimensions()
                                          , descriptors::match<detectors::SPoint>(
                                              descriptors::siDescriptors(
-                                                 detectors::shiTomasi(dog2, detectors::blobs(dog2), 15e-5f)
+                                                 detectors::shiTomasi(dog2, detectors::blobs(dog2), 1e-4f)
                                                  , gpyramid2, normalize)
                                              , descriptors::siDescriptors(
-                                                 detectors::shiTomasi(dog1, detectors::blobs(dog1), 15e-5f)
+                                                 detectors::shiTomasi(dog1, detectors::blobs(dog1), 1e-4f)
                                                  , gpyramid1, normalize)
-                                             , .65f));
+                                             ));
+    auto shift = 10.f;
+    auto x1 = 0.f, y1 = 0.f;
+    auto x2 = image2.width() + shift, y2 = y1;
+    auto x3 = x2, y3 = image2.height() + shift;
+    auto x4 = x1, y4 = y3;
 
-    cv::Rect rect(transform2d.x - image2.width() * transform2d.scale / 2
-             , transform2d.y - image2.height() * transform2d.scale / 2
-             , image2.width() * transform2d.scale
-             , image2.height() * transform2d.scale);
-
-    auto result = utils::convertToMat(utils::convertTo3Ch(image1));
-    cv::rectangle(result, rect, cv::Scalar(.0, 1., 1.));
+    auto result = utils::addRectTo(image1, utils::applyTransform({cv::Point2f(x1, y1), cv::Point2f(x2, y2)
+                                                                    , cv::Point2f(x3, y3)
+                                                                    , cv::Point2f(x4, y4)
+                                                                 }, transform2d));
 
     utils::render("hough", result);
 }

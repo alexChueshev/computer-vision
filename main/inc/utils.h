@@ -34,6 +34,9 @@ namespace utils {
     cv::Mat applyTransform(const pi::Img& src, const pi::transforms::Transform2d& transform2d,
                            int width, int height);
 
+    std::vector<cv::Point2f> applyTransform(const std::vector<cv::Point2f>& points,
+                                            const pi::transforms::Transform2d& transform2d);
+
     cv::Mat simpleStitching(const std::vector<cv::Mat>& warps, const pi::Img& src,
                             int width, int height);
 
@@ -42,6 +45,8 @@ namespace utils {
     pi::Img addPointsTo(const pi::Img& src, const std::vector<pi::detectors::Point>& points);
 
     cv::Mat addBlobsTo(const pi::Img& src, const std::vector<pi::detectors::SPoint>& points);
+
+    cv::Mat addRectTo(const pi::Img& src, const std::vector<cv::Point2f>& points);
 
     float euclidDistance(int x1, int x2, int y1, int y2);
 

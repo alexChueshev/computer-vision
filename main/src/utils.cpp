@@ -88,6 +88,14 @@ cv::Mat utils::applyTransform(const Img& src, const transforms::Transform2d& tra
     return warp;
 }
 
+std::vector<cv::Point2f> utils::applyTransform(const std::vector<cv::Point2f>& points,
+                                               const transforms::Transform2d& transform2d) {
+    std::vector<cv::Point2f> transformed;
+    cv::perspectiveTransform(points, transformed, utils::convertToMat(transform2d));
+
+    return transformed;
+}
+
 cv::Mat utils::simpleStitching(const std::vector<cv::Mat>& warps, const Img& src, int width, int height) {
     cv::Mat dst(height, width, CV_32FC1);
 
@@ -128,6 +136,19 @@ cv::Mat utils::addBlobsTo(const Img& src, const std::vector<detectors::SPoint>& 
     //add blobs to image
     for(const auto &point : points) {
         cv::circle(dst, cv::Point(point.col, point.row), point.sigmaGlobal, color);
+    }
+
+    return dst;
+}
+
+cv::Mat utils::addRectTo(const pi::Img& src, const std::vector<cv::Point2f>& points) {
+    assert(src.channels() == 1);
+
+    auto dst = convertToMat(convertTo3Ch(src));
+    auto color = cv::Scalar(0, 0, 1);
+
+    for(size_t i = 0, size = points.size(); i < size; i++) {
+        cv::line(dst, points[i], points[(i + 1) % size], color);
     }
 
     return dst;
