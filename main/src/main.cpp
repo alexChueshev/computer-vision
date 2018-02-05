@@ -247,7 +247,7 @@ void l9() {
 
     auto image1 = opts::normalize(
                     opts::grayscale(
-                        utils::load("/home/alexander/hough/box_in_scene.png")));
+                        utils::load("/home/alexander/hough/box_background.png")));
     auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
     auto dog1 = pyramids::dog(gpyramid1);
 
@@ -260,13 +260,14 @@ void l9() {
     auto transform2d = transforms::hough(image1.dimensions(), image2.dimensions()
                                          , descriptors::match<detectors::SPoint>(
                                              descriptors::siDescriptors(
-                                                 detectors::shiTomasi(dog2, detectors::blobs(dog2), 1e-4f)
+                                                 detectors::shiTomasi(dog2, detectors::blobs(dog2), 1e-5f)
                                                  , gpyramid2, normalize)
                                              , descriptors::siDescriptors(
-                                                 detectors::shiTomasi(dog1, detectors::blobs(dog1), 1e-4f)
+                                                 detectors::shiTomasi(dog1, detectors::blobs(dog1), 1e-5f)
                                                  , gpyramid1, normalize)
                                              ));
-    auto shift = 10.f;
+
+    auto shift = 5.f;
     auto x1 = 0.f, y1 = 0.f;
     auto x2 = image2.width() + shift, y2 = y1;
     auto x3 = x2, y3 = image2.height() + shift;
@@ -278,4 +279,5 @@ void l9() {
                                                                  }, transform2d));
 
     utils::render("hough", result);
+    utils::save("../examples/lr9/result", result);
 }

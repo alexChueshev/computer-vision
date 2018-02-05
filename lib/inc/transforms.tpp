@@ -99,7 +99,7 @@ pi::transforms::Transform2d pi::transforms::dltAffine(const std::vector<PPairs<T
     double dataX[width];
     auto* residual = gsl_vector_alloc(height);
     auto X = gsl_vector_view_array(dataX, width);
-    auto* tau = gsl_vector_alloc(std::min(width, height));
+    auto* tau = gsl_vector_alloc(width);
 
     for(auto i = 0; i < size; i++) {
         const auto &pair = pairs[i];

@@ -100,7 +100,7 @@ transforms::Transform2d transforms::hough(Size imgSize, Size objSize, const std:
     for(const auto &bin : bins) {
         if(bin.second.size() < 3) continue;
 
-        auto tmp = transforms::inliers(dltAffine(bin.second), pairs, lcBandwidth / 2);
+        auto tmp = transforms::inliers(dltAffine(bin.second), pairs, lcBandwidth * .25f);
         auto tmpSize = tmp.size();
 
         if(tmpSize > bestInliersCount) {
