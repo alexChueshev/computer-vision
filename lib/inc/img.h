@@ -57,6 +57,8 @@ public:
 
     int step() const;
 
+    bool empty() const;
+
     int imageSize() const;
 
     int dataSize() const;

@@ -17,6 +17,8 @@
 namespace utils {
     pi::Img load(const std::string& path);
 
+    std::vector<pi::Img> load(const std::string& pattern, bool isRecursive);
+
     void render(const std::string& window, const pi::Img& img);
 
     void render(const std::string& window, const cv::Mat& img);

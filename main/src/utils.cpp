@@ -4,8 +4,9 @@ using namespace pi;
 
 Img utils::load(const std::string& path) {
     cv::Mat src = cv::imread(path, cv::IMREAD_COLOR);
-    assert(src.type() == CV_8UC3);
+    if(src.empty()) return Img();
 
+    assert(src.type() == CV_8UC3);
     Img img(src.rows, src.cols, src.channels());
 
     auto* data = img.data();
@@ -21,6 +22,21 @@ Img utils::load(const std::string& path) {
     }
 
     return img;
+}
+
+std::vector<pi::Img> utils::load(const std::string& pattern, bool isRecursive) {
+    std::vector<pi::Img> images;
+    std::vector<cv::String> paths;
+
+    cv::glob(pattern, paths, isRecursive);
+    for(const auto &path : paths) {
+        auto img = utils::load(path);
+        if(!img.empty()) {
+            images.push_back(std::move(img));
+        }
+    }
+
+    return images;
 }
 
 void utils::render(const std::string& window, const Img& img) {

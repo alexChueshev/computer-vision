@@ -92,6 +92,10 @@ int Img::step() const {
     return _step;
 }
 
+bool Img::empty() const {
+    return !_data;
+}
+
 int Img::imageSize() const {
     return _height * _width;
 }
