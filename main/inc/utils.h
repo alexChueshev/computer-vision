@@ -50,6 +50,8 @@ namespace utils {
 
     cv::Mat addRectTo(const pi::Img& src, const std::vector<cv::Point2f>& points);
 
+    std::vector<cv::Point2f> corners(const pi::Img& src, float shift);
+
     float euclidDistance(int x1, int x2, int y1, int y2);
 
     float radius(const pi::Img& img);

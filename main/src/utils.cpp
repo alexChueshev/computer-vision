@@ -170,6 +170,15 @@ cv::Mat utils::addRectTo(const pi::Img& src, const std::vector<cv::Point2f>& poi
     return dst;
 }
 
+std::vector<cv::Point2f> utils::corners(const pi::Img& src, float shift) {
+    auto x1 = 0.f, y1 = 0.f;
+    auto x2 = src.width() + shift, y2 = y1;
+    auto x3 = x2, y3 = src.height() + shift;
+    auto x4 = x1, y4 = y3;
+
+    return { cv::Point2f(x1, y1), cv::Point2f(x2, y2), cv::Point2f(x3, y3), cv::Point2f(x4, y4) };
+}
+
 Img utils::convertTo3Ch(const Img& src) {
     assert(src.channels() == 1);
 
