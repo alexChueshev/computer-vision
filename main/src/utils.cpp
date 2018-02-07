@@ -24,15 +24,15 @@ Img utils::load(const std::string& path) {
     return img;
 }
 
-std::vector<pi::Img> utils::load(const std::string& pattern, bool isRecursive) {
-    std::vector<pi::Img> images;
+std::vector<std::pair<std::string, pi::Img>> utils::load(const std::string& pattern, bool isRecursive) {
+    std::vector<std::pair<std::string, pi::Img>> images;
     std::vector<cv::String> paths;
 
     cv::glob(pattern, paths, isRecursive);
     for(const auto &path : paths) {
         auto img = utils::load(path);
         if(!img.empty()) {
-            images.push_back(std::move(img));
+            images.push_back(std::pair<std::string, pi::Img>(std::move(path), std::move(img)));
         }
     }
 
