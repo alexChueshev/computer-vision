@@ -12,7 +12,7 @@ include_directories( ${Boost_INCLUDE_DIR} )
 
 set(SOURCES
     src/main.cpp
-    src/utils.cpp inc/utils.h)
+    src/utils.cpp inc/utils.hpp inc/utils.h)
 
 add_executable(main ${SOURCES})
 

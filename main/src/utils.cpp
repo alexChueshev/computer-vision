@@ -76,6 +76,15 @@ void utils::save(const std::string& path, const cv::Mat& img, const std::string&
     cv::imwrite(ss.str(), saved);
 }
 
+void utils::serialize(const std::string& filename, const std::vector<std::string>& paths,
+                      const pi::transforms::Transform2d& transform2d, float probability) {
+    cv::FileStorage file(filename, cv::FileStorage::WRITE);
+
+    file << "Paths" << paths;
+    file << "Probability" << probability;
+    file << "Transform2d" << utils::convertToMat(transform2d);
+}
+
 cv::Mat utils::convertToMat(const Img& src) {
     auto type = src.channels() == 1 ? CV_32FC1 : CV_32FC3;
 

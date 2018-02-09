@@ -10,8 +10,6 @@ using namespace boost;
 
 std::vector<descriptors::SiDescriptor> descriptors(const pi::Img&);
 
-void serialize(const std::string&, const std::vector<std::string>&, const transforms::Transform2d&, float);
-
 std::vector<cv::Point2f> rect(const pi::Img&, const transforms::Transform2d&, float);
 
 int main(int argc, char *argv[]) {
@@ -52,8 +50,8 @@ int main(int argc, char *argv[]) {
         const auto probability = vHypothesis.second;
 
         if(probability > 0) {
-            ::serialize((filesystem::path{filename} += ".yml").string(), {objPath, image.first}
-                        , transform2d.first, probability);
+            utils::serialize((filesystem::path{filename} += ".yml").string(), {objPath, image.first}
+                             , transform2d.first, probability);
             utils::save(filename.string(), utils::addRectTo(img, ::rect(object, transform2d.first, 5.f)));
         }
     }
@@ -69,15 +67,6 @@ std::vector<descriptors::SiDescriptor> descriptors(const pi::Img& img) {
                                       , gpyramid, [](const auto& descriptor) {
         return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
     });
-}
-
-void serialize(const std::string& filename, const std::vector<std::string>& paths,
-               const transforms::Transform2d& transform2d, float probability) {
-    cv::FileStorage file(filename, cv::FileStorage::WRITE);
-
-    file << "Paths" << paths;
-    file << "Probability" << probability;
-    file << "Transform2d" << utils::convertToMat(transform2d);
 }
 
 std::vector<cv::Point2f> rect(const pi::Img& obj, const transforms::Transform2d& transform2d, float shift) {
