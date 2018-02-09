@@ -16,6 +16,12 @@ namespace pi::transforms {
     using PPairs = std::pair<T, T>;
 
     template<typename T>
+    using Hypothesis = std::pair<Transform2d, std::vector<PPairs<T>>>;
+
+    template<typename T>
+    using Hypotheses = std::vector<Hypothesis<T>>;
+
+    template<typename T>
     Transform2d dltHomography(const std::vector<PPairs<T>>& pairs);
 
     template<typename T>

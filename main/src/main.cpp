@@ -1,283 +1,93 @@
 #include <descriptors.h>
-#include <homography.h>
 #include <hough.h>
 
 #include <utils.h>
 
+#include <boost/filesystem.hpp>
+
 using namespace pi;
+using namespace boost;
 
-void l1();
+std::vector<descriptors::SiDescriptor> descriptors(const pi::Img&);
 
-void l2();
+void serialize(const std::string&, const std::vector<std::string>&, const transforms::Transform2d&, float);
 
-void l3();
+std::vector<cv::Point2f> rect(const pi::Img&, const transforms::Transform2d&, float);
 
-void l4();
+int main(int argc, char *argv[]) {
+    cv::CommandLineParser parser(argc, argv, "{obj||}{src||}{dst||}");
+    const auto objPath = parser.get<std::string>("obj");
+    const auto srcPath = parser.get<std::string>("src");
+    const auto dstPath = parser.get<std::string>("dst");
 
-void l5();
+    if(!parser.check()) {
+        parser.printErrors();
+        return 0;
+    }
 
-void l6();
+    std::vector<std::pair<std::string, pi::Img>> images;
+    auto object = utils::load(objPath);
+    for(const auto &image : utils::load(srcPath, true)) {
+        images.push_back(std::pair<std::string, pi::Img>(
+                             std::move(image.first),
+                             opts::normalize(opts::grayscale(image.second))));
+    }
 
-void l7();
+    if(images.size() == 0 || object.empty()) {
+        return 0;
+    }
 
-void l8();
+    object = opts::normalize(opts::grayscale(object));
+    auto objDescriptors = ::descriptors(object);
 
-void l9();
+    for(const auto &image : images) {
+        const auto &img = image.second;
+        const auto filename = filesystem::path{dstPath} /= filesystem::path{image.first}.stem();
 
-int main() {
-    //l1();
-    //l2();
-    //l3();
-    //l4();
-    //l5();
-    //l6();
-    //l7();
-    //l8();
-    l9();
+        auto matches = descriptors::match<detectors::SPoint>(objDescriptors, ::descriptors(img), .65f);
+        auto vHypothesis = transforms::verify(transforms::hough(img.dimensions(), object.dimensions(), matches)
+                                              , matches.size(), .8f);
+
+        const auto &transform2d = vHypothesis.first;
+        const auto probability = vHypothesis.second;
+
+        if(probability > 0) {
+            ::serialize((filesystem::path{filename} += ".yml").string(), {objPath, image.first}
+                        , transform2d.first, probability);
+            utils::save(filename.string(), utils::addRectTo(img, ::rect(object, transform2d.first, 5.f)));
+        }
+    }
 
     return 0;
 }
 
-void l1() {
-    auto image = filters::sobel(
-                      filters::gaussian(
-                        opts::normalize(
-                            opts::grayscale(
-                                utils::load("/home/alexander/Lenna.png"))),
-                                    1.8f, borders::BORDER_REPLICATE),
-                                        borders::BORDER_REPLICATE, filters::magnitude);
+std::vector<descriptors::SiDescriptor> descriptors(const pi::Img& img) {
+    auto gpyramid = pyramids::gpyramid(img, 3, 3, pyramids::logOctavesCount);
+    auto dog = pyramids::dog(gpyramid);
 
-    utils::render("result", image);
-    utils::save("../examples/lr1/sobel", image);
-}
-
-void l2() {
-    pyramids::iterate(
-        pyramids::gpyramid(
-            opts::normalize(
-                opts::grayscale(
-                    utils::load("/home/alexander/Lenna.png"))),
-                        2, pyramids::logOctavesCount),
-                            [](const pyramids::Layer& layer) {
-        utils::save("../examples/lr2/" + std::to_string(layer.sigmaGlobal), layer.img);
+    return descriptors::siDescriptors(detectors::shiTomasi(dog, detectors::blobs(dog), 1e-5f)
+                                      , gpyramid, [](const auto& descriptor) {
+        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
     });
 }
 
-void l3() {
-    auto image = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
+void serialize(const std::string& filename, const std::vector<std::string>& paths,
+               const transforms::Transform2d& transform2d, float probability) {
+    cv::FileStorage file(filename, cv::FileStorage::WRITE);
 
-    auto moravecImage = utils::addPointsTo(image,
-                            detectors::adaptiveNonMaximumSuppresion(
-                                detectors::moravec(image), 300,
-                                utils::radius(image), utils::euclidDistance));
-    utils::render("moravec", moravecImage);
-    utils::save("../examples/lr3/moravec300points", moravecImage);
-
-    auto harrisImage = utils::addPointsTo(image, detectors::harris(image));
-    utils::render("harris", harrisImage);
-    utils::save("../examples/lr3/harrisclassic", harrisImage);
+    file << "Paths" << paths;
+    file << "Probability" << probability;
+    file << "Transform2d" << utils::convertToMat(transform2d);
 }
 
-void l4() {
-    auto normalize = [](const auto& descriptor) {
-        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
-    };
+std::vector<cv::Point2f> rect(const pi::Img& obj, const transforms::Transform2d& transform2d, float shift) {
 
-    auto image1 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-
-    auto image2 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-
-    auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match<detectors::Point>(
-                                               descriptors::bDescriptors(detectors::harris(image2),
-                                                    filters::sobel(image2, borders::BORDER_REFLECT),
-                                                    normalize),
-                                               descriptors::bDescriptors(detectors::harris(image1),
-                                                    filters::sobel(image1, borders::BORDER_REFLECT),
-                                                    normalize)));
-    utils::render("matches", matchImage);
-    utils::save("../examples/lr4/matches", matchImage);
-}
-
-void l5() {
-    auto normalize = [](const auto& descriptor) {
-        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
-    };
-
-    auto image1 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-
-    auto image2 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-
-    auto matchImage = utils::drawMatches(image2, image1,
-                                         descriptors::match<detectors::Point>(
-                                                descriptors::riDescriptors(detectors::harris(image2, 5, .015f),
-                                                     filters::sobel(image2, borders::BORDER_REFLECT),
-                                                     normalize),
-                                                descriptors::riDescriptors(detectors::harris(image1, 5, .015f),
-                                                     filters::sobel(image1, borders::BORDER_REFLECT),
-                                                     normalize), .55f));
-    utils::render("matches", matchImage);
-    utils::save("../examples/lr5/matches", matchImage);
-}
-
-void l6() {
-    auto normalize = [](const auto& descriptor) {
-        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
-    };
-
-    auto image1 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-    auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
-    auto dog1 = pyramids::dog(gpyramid1);
-    auto points1 = detectors::shiTomasi(dog1, detectors::blobs(dog1), 25e-5f);
-
-    auto image2 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-    auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
-    auto dog2 = pyramids::dog(gpyramid2);
-    auto points2 = detectors::shiTomasi(dog2, detectors::blobs(dog2), 25e-5f);
-
-    auto mImage1 = utils::addBlobsTo(image1, points1);
-    auto mImage2 = utils::addBlobsTo(image2, points2);
-
-    auto matchImage = utils::drawMatches(mImage2, mImage1,
-                                          descriptors::match<detectors::Point>(
-                                                 descriptors::siDescriptors(points2, gpyramid2, normalize
-                                                                            , descriptors::D_HISTO_SIZE
-                                                                            , descriptors::D_HISTO_NUMS
-                                                                            , descriptors::D_BINS
-                                                                            , borders::BORDER_REPLICATE, false),
-                                                 descriptors::siDescriptors(points1, gpyramid1, normalize
-                                                                            , descriptors::D_HISTO_SIZE
-                                                                            , descriptors::D_HISTO_NUMS
-                                                                            , descriptors::D_BINS
-                                                                            , borders::BORDER_REPLICATE, false)
-                                                 , .62f));
-
-    utils::render("matches", matchImage);
-    utils::save("../examples/lr6/matches", matchImage);
-}
-
-void l7() {
-    auto normalize = [](const auto& descriptor) {
-        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
-    };
-
-    auto image1 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-    auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
-    auto dog1 = pyramids::dog(gpyramid1);
-    auto points1 = detectors::shiTomasi(dog1, detectors::blobs(dog1), 25e-5f);
-
-    auto image2 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/Lenna.png")));
-    auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
-    auto dog2 = pyramids::dog(gpyramid2);
-    auto points2 = detectors::shiTomasi(dog2, detectors::blobs(dog2), 25e-5f);
-
-    auto mImage1 = utils::addBlobsTo(image1, points1);
-    auto mImage2 = utils::addBlobsTo(image2, points2);
-
-    auto matchImage = utils::drawMatches(mImage2, mImage1,
-                                          descriptors::match<detectors::Point>(
-                                                 descriptors::siDescriptors(points2, gpyramid2, normalize)
-                                                 , descriptors::siDescriptors(points1, gpyramid1, normalize)
-                                                 , .62f));
-
-    utils::render("matches", matchImage);
-    utils::save("../examples/lr7/matches", matchImage);
-}
-
-void l8() {
-    auto normalize = [](const auto& descriptor) {
-        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
-    };
-
-    auto image1 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/panorama_1.jpg")));
-    auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
-    auto dog1 = pyramids::dog(gpyramid1);
-
-    auto image2 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/panorama_2.jpg")));
-    auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
-    auto dog2 = pyramids::dog(gpyramid2);
-
-    auto transform2d = transforms::homography(descriptors::match<detectors::Point>(
-                                                     descriptors::siDescriptors(
-                                                            detectors::shiTomasi(dog2, detectors::blobs(dog2)
-                                                                                 , 25e-5f)
-                                                            , gpyramid2, normalize)
-                                                     , descriptors::siDescriptors(
-                                                            detectors::shiTomasi(dog1, detectors::blobs(dog1)
-                                                                                 , 25e-5f)
-                                                            , gpyramid1, normalize)
-                                                     , .62f));
-
-    auto width = image1.width() + image2.width();
-    auto height = image1.height() + image2.height();
-
-    auto pano = utils::simpleStitching({utils::applyTransform(image2, transform2d, width, height)}
-                                       , image1, width, height);
-
-    utils::render("pano", pano);
-    utils::save("../examples/lr8/result", pano);
-}
-
-void l9() {
-    auto normalize = [](const auto& descriptor) {
-        return descriptors::normalize(descriptors::trim(descriptors::normalize(descriptor)));
-    };
-
-    auto image1 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/hough/box_background.png")));
-    auto gpyramid1 = pyramids::gpyramid(image1, 3, 3, pyramids::logOctavesCount);
-    auto dog1 = pyramids::dog(gpyramid1);
-
-    auto image2 = opts::normalize(
-                    opts::grayscale(
-                        utils::load("/home/alexander/hough/box.png")));
-    auto gpyramid2 = pyramids::gpyramid(image2, 3, 3, pyramids::logOctavesCount);
-    auto dog2 = pyramids::dog(gpyramid2);
-
-    auto transform2d = transforms::hough(image1.dimensions(), image2.dimensions()
-                                         , descriptors::match<detectors::SPoint>(
-                                             descriptors::siDescriptors(
-                                                 detectors::shiTomasi(dog2, detectors::blobs(dog2), 1e-5f)
-                                                 , gpyramid2, normalize)
-                                             , descriptors::siDescriptors(
-                                                 detectors::shiTomasi(dog1, detectors::blobs(dog1), 1e-5f)
-                                                 , gpyramid1, normalize)
-                                             ));
-
-    auto shift = 5.f;
     auto x1 = 0.f, y1 = 0.f;
-    auto x2 = image2.width() + shift, y2 = y1;
-    auto x3 = x2, y3 = image2.height() + shift;
+    auto x2 = obj.width() + shift, y2 = y1;
+    auto x3 = x2, y3 = obj.height() + shift;
     auto x4 = x1, y4 = y3;
 
-    auto result = utils::addRectTo(image1, utils::applyTransform({cv::Point2f(x1, y1), cv::Point2f(x2, y2)
-                                                                    , cv::Point2f(x3, y3)
-                                                                    , cv::Point2f(x4, y4)
-                                                                 }, transform2d));
-
-    utils::render("hough", result);
-    utils::save("../examples/lr9/result", result);
+    return utils::applyTransform({cv::Point2f(x1, y1), cv::Point2f(x2, y2)
+                                  , cv::Point2f(x3, y3), cv::Point2f(x4, y4)
+                                 }, transform2d);
 }

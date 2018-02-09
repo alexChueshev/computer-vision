@@ -11,8 +11,9 @@ namespace {
     };
 }
 
-transforms::Transform2d transforms::hough(Size imgSize, Size objSize, const std::vector<SPPairs>& pairs,
-                                          float scMin, int scBins, float scFactor, float lcCoeff, int orntBins) {
+transforms::Hypotheses<detectors::SPoint> transforms::hough(Size imgSize, Size objSize,
+                                                            const std::vector<SPPairs>& pairs, float scMin,
+                                                            int scBins, float scFactor, float lcCoeff, int orntBins) {
     assert(imgSize.width > 0 && imgSize.height > 0);
     assert(objSize.width > 0 && objSize.height > 0);
     assert(pairs.size() >= 3);
@@ -94,24 +95,38 @@ transforms::Transform2d transforms::hough(Size imgSize, Size objSize, const std:
         }
     }
 
-    std::vector<SPPairs> inliers;
-    auto bestInliersCount = inliers.size();
-
+    transforms::Hypotheses<detectors::SPoint> hypotheses;
     for(const auto &bin : bins) {
         if(bin.second.size() < 3) continue;
 
         auto tmp = transforms::inliers(dltAffine(bin.second), pairs, lcBandwidth * .25f);
         auto tmpSize = tmp.size();
 
-        if(tmpSize > bestInliersCount) {
-            bestInliersCount = tmpSize;
-            inliers.swap(tmp);
+        if(tmpSize >= 3) {
+            hypotheses.emplace_back(dltAffine(tmp), std::move(tmp));
         }
     }
 
-    if(bestInliersCount < 3) {
-        return Transform2d{};
+    return hypotheses;
+}
+
+std::pair<transforms::Hypothesis<detectors::SPoint>, float> transforms::verify(
+                                                             const transforms::Hypotheses<detectors::SPoint>& hypotheses,
+                                                             int matches, float threshold) {
+    auto max = .0f;
+    auto best = -1;
+
+    for(auto it = std::begin(hypotheses), end = std::end(hypotheses); it != end; it++) {
+        auto probability = ((float) it->second.size()) / matches;
+        if(probability > max) {
+            max = probability;
+            best = std::distance(std::begin(hypotheses), it);
+        }
     }
 
-    return dltAffine(inliers);
+    if(best != -1 && max >= threshold) {
+        return { hypotheses[best], max};
+    }
+
+    return {{}, 0};
 }
