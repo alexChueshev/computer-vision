@@ -1,8 +1,10 @@
 #ifdef COMPUTER_VISION_DESCRIPTORS_H
 
+using namespace pi;
+
 template<typename T>
-struct pi::descriptors::Descriptor<T, typename std::enable_if_t<
-       std::is_base_of<pi::detectors::Point, T>::value>> {
+struct descriptors::Descriptor<T, typename std::enable_if_t<
+       std::is_base_of<detectors::Point, T>::value>> {
     int size;
     T point;
     std::unique_ptr<float[]> data;
@@ -51,7 +53,7 @@ struct pi::descriptors::Descriptor<T, typename std::enable_if_t<
 };
 
 template<typename T>
-pi::descriptors::Descriptor<T> pi::descriptors::normalize(Descriptor<T> descriptor) {
+descriptors::Descriptor<T> descriptors::normalize(Descriptor<T> descriptor) {
     auto first = descriptor.data.get();
     auto last = descriptor.data.get() + descriptor.size;
 
@@ -68,7 +70,7 @@ pi::descriptors::Descriptor<T> pi::descriptors::normalize(Descriptor<T> descript
 }
 
 template<typename T>
-pi::descriptors::Descriptor<T> pi::descriptors::trim(Descriptor<T> descriptor, float threshold) {
+descriptors::Descriptor<T> descriptors::trim(Descriptor<T> descriptor, float threshold) {
     auto first = descriptor.data.get();
     auto last = descriptor.data.get() + descriptor.size;
 
@@ -80,7 +82,7 @@ pi::descriptors::Descriptor<T> pi::descriptors::trim(Descriptor<T> descriptor, f
 }
 
 template<typename T>
-std::vector<int> pi::descriptors::peaks(const Descriptor<T>& descriptor, float threshold, int nums) {
+std::vector<int> descriptors::peaks(const Descriptor<T>& descriptor, float threshold, int nums) {
     std::vector<int> positions;
 
     auto maxValue = std::max_element(descriptor.data.get(), descriptor.data.get() + descriptor.size);
@@ -97,7 +99,7 @@ std::vector<int> pi::descriptors::peaks(const Descriptor<T>& descriptor, float t
 }
 
 template<typename T>
-float pi::descriptors::distance(const Descriptor<T>& descriptor1, const Descriptor<T>& descriptor2) {
+float descriptors::distance(const Descriptor<T>& descriptor1, const Descriptor<T>& descriptor2) {
     assert(descriptor1.size == descriptor2.size);
 
     auto distance = .0f;
@@ -109,10 +111,10 @@ float pi::descriptors::distance(const Descriptor<T>& descriptor1, const Descript
 }
 
 template<typename T, typename U>
-std::vector<std::pair<T, T>> pi::descriptors::match(const std::vector<Descriptor<U>>& descriptors1,
-                                                    const std::vector<Descriptor<U>>& descriptors2,
-                                                    const std::function<std::pair<T, T>(Descriptor<U>, Descriptor<U>)>& op,
-                                                    float threshold) {
+std::vector<std::pair<T, T>> descriptors::match(const std::vector<Descriptor<U>>& descriptors1,
+                                                const std::vector<Descriptor<U>>& descriptors2,
+                                                const std::function<std::pair<T, T>(Descriptor<U>, Descriptor<U>)>& op,
+                                                float threshold) {
     std::vector<std::pair<T, T>> matches;
 
     for(const auto &descriptor1 : descriptors1) {
@@ -139,16 +141,16 @@ std::vector<std::pair<T, T>> pi::descriptors::match(const std::vector<Descriptor
     return matches;
 }
 
-template<typename T, typename U> pi::descriptors::MatchResolvedType<pi::detectors::Point, T>
-pi::descriptors::match(const std::vector<Descriptor<U>>& descriptors1, const std::vector<Descriptor<U>>& descriptors2,
-                       float threshold) {
+template<typename T, typename U> descriptors::MatchResolvedType<detectors::Point, T>
+descriptors::match(const std::vector<Descriptor<U>>& descriptors1, const std::vector<Descriptor<U>>& descriptors2,
+                   float threshold) {
     return match<T, U>(descriptors1, descriptors2, [](const auto& d1, const auto& d2) {
         return std::pair<T, T>(d1.point, d2.point);
     }, threshold);
 }
 
-template<typename T, typename U> pi::descriptors::MatchResolvedType<pi::descriptors::Descriptor<U>, T>
-pi::descriptors::match(const std::vector<Descriptor<U>>& descriptors1, const std::vector<Descriptor<U>>& descriptors2,
+template<typename T, typename U> descriptors::MatchResolvedType<descriptors::Descriptor<U>, T>
+descriptors::match(const std::vector<Descriptor<U>>& descriptors1, const std::vector<Descriptor<U>>& descriptors2,
                        float threshold) {
     return match<T, U>(descriptors1, descriptors2, [](auto d1, auto d2) {
         return std::pair<T, T>(std::move(d1), std::move(d2));
