@@ -2,11 +2,19 @@
 
 #include <boost/filesystem.hpp>
 
+#include <iostream>
+
+#define LOGGER(message) std::cout << message << std::endl;
+
 using namespace pi;
 using namespace boost;
 
-std::vector<descriptors::SiDescriptor> descriptors(const pi::Img&);
+constexpr auto EMPTY_IMG = "[Error] - can't load images";
+constexpr auto NO_MATCHES = "[Warning] - can't provide enough feature matches: ";
+constexpr auto OBJ_FOUND = "[Success] - object is found in: ";
+constexpr auto INFO = "[Info] - For more information, see the destination path";
 
+std::vector<descriptors::SiDescriptor> descriptors(const pi::Img&);
 std::vector<cv::Point2f> rect(const pi::Img&, const transforms::Transform2d&, float);
 
 int main(int argc, char *argv[]) {
@@ -29,6 +37,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(images.size() == 0 || object.empty()) {
+        LOGGER(::EMPTY_IMG);
         return 0;
     }
 
@@ -39,10 +48,14 @@ int main(int argc, char *argv[]) {
         const auto &img = image.second;
         const auto filename = filesystem::path{dstPath} /= filesystem::path{image.first}.stem();
 
-        auto matches = descriptors::match<detectors::SPoint>(objDescriptors, ::descriptors(img), .65f);
-        auto vHypothesis = transforms::verify(transforms::hough(img.dimensions(), object.dimensions(), matches)
-                                              , matches.size(), .8f);
+        auto matches = descriptors::match<detectors::SPoint>(objDescriptors, ::descriptors(img));
+        if(matches.size() < 3) {
+            LOGGER(::NO_MATCHES + image.first);
+            continue;
+        }
 
+        auto vHypothesis = transforms::verify(transforms::hough(img.dimensions(), object.dimensions(), matches)
+                                              , matches.size(), .7f);
         const auto &transform2d = vHypothesis.first;
         const auto probability = vHypothesis.second;
 
@@ -50,8 +63,12 @@ int main(int argc, char *argv[]) {
             utils::serialize((filesystem::path{filename} += ".yml").string(), {objPath, image.first}
                              , transform2d.first, probability);
             utils::save(filename.string(), utils::addRectTo(img, ::rect(object, transform2d.first, 5.f)));
+
+            LOGGER(::OBJ_FOUND + image.first);
         }
     }
+
+    LOGGER(::INFO);
 
     return 0;
 }
