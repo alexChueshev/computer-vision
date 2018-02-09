@@ -10,8 +10,7 @@ add_library(lib
         src/img.cpp inc/img.h
         src/pyramid.cpp inc/pyramid.h
         src/detectors.cpp inc/detectors.h
-        inc/descriptors.tpp inc/transforms.tpp
-        src/descriptors.cpp inc/descriptors.h
+        src/descriptors.cpp inc/descriptors.hpp inc/descriptors.h
         src/homography.cpp inc/homography.h
         src/hough.cpp inc/hough.h)
 
