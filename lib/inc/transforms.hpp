@@ -1,39 +1,9 @@
-#ifndef COMPUTER_VISION_TRANSFORMS_TPP
-#define COMPUTER_VISION_TRANSFORMS_TPP
+#ifdef COMPUTER_VISION_TRANSFORMS_H
 
-#include <detectors.h>
-
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_blas.h>
-
-namespace pi::transforms {
-    constexpr int T_SIZE = 3;
-
-    typedef std::array<float, T_SIZE> Transform1d;
-    typedef std::array<Transform1d, T_SIZE> Transform2d;
-
-    template<typename T>
-    using PPairs = std::pair<T, T>;
-
-    template<typename T>
-    using Hypothesis = std::pair<Transform2d, std::vector<PPairs<T>>>;
-
-    template<typename T>
-    using Hypotheses = std::vector<Hypothesis<T>>;
-
-    template<typename T>
-    Transform2d dltHomography(const std::vector<PPairs<T>>& pairs);
-
-    template<typename T>
-    Transform2d dltAffine(const std::vector<PPairs<T>>& pairs);
-
-    template<typename T>
-    std::vector<PPairs<T>> inliers(const Transform2d& h, const std::vector<PPairs<T>>& matches,
-                                   float threshold);
-}
+using namespace pi;
 
 template<typename T>
-pi::transforms::Transform2d pi::transforms::dltHomography(const std::vector<PPairs<T>>& pairs) {
+transforms::Transform2d transforms::dltHomography(const std::vector<PPairs<T>>& pairs) {
     assert(pairs.size() >= 4);
 
     auto size = pairs.size();
@@ -92,7 +62,7 @@ pi::transforms::Transform2d pi::transforms::dltHomography(const std::vector<PPai
 }
 
 template<typename T>
-pi::transforms::Transform2d pi::transforms::dltAffine(const std::vector<PPairs<T>>& pairs) {
+transforms::Transform2d transforms::dltAffine(const std::vector<PPairs<T>>& pairs) {
     assert(pairs.size() >= 3);
 
     auto size = pairs.size();
@@ -144,9 +114,9 @@ pi::transforms::Transform2d pi::transforms::dltAffine(const std::vector<PPairs<T
 }
 
 template<typename T>
-std::vector<pi::transforms::PPairs<T>> pi::transforms::inliers(const Transform2d& h,
-                                                               const std::vector<PPairs<T>>& matches,
-                                                               float threshold) {
+std::vector<transforms::PPairs<T>> transforms::inliers(const Transform2d& h,
+                                                       const std::vector<PPairs<T>>& matches,
+                                                       float threshold) {
     std::vector<PPairs<T>> inliers;
 
     auto mul = [](const Transform1d& h, int x, int y, int d) {
@@ -169,4 +139,51 @@ std::vector<pi::transforms::PPairs<T>> pi::transforms::inliers(const Transform2d
     return inliers;
 }
 
-#endif //COMPUTER_VISION_TRANSFORMS_TPP
+template<typename T>
+std::pair<transforms::Hypothesis<T>, float> transforms::verify(const transforms::Hypotheses<T>& hypotheses,
+                                                               int matches, float threshold) {
+    auto max = .0f;
+    auto best = -1;
+
+    for(auto it = std::begin(hypotheses), end = std::end(hypotheses); it != end; it++) {
+        auto probability = ((float) it->second.size()) / matches;
+        if(probability > max) {
+            max = probability;
+            best = std::distance(std::begin(hypotheses), it);
+        }
+    }
+
+    if(best != -1 && max >= threshold) {
+        return { hypotheses[best], max};
+    }
+
+    return {{}, 0};
+}
+
+template<typename T>
+transforms::Transform2d transforms::homography(const std::vector<PPairs<T>>& matches,
+                                               float threshold, int iters) {
+    assert(matches.size() >= 4);
+
+    std::vector<PPairs<T>> pairs;
+    std::vector<PPairs<T>> inliers;
+    auto bestInliersCount = inliers.size();
+    std::mt19937 rand{std::random_device{}()};
+
+    for(auto i = 0; i < iters; i++) {
+        pairs.clear();
+        std::sample(std::begin(matches), std::end(matches), std::back_inserter(pairs), 4, rand);
+
+        auto tmp = transforms::inliers(dltHomography(pairs), matches, threshold);
+        auto tmpSize = tmp.size();
+
+        if(tmpSize > bestInliersCount) {
+            bestInliersCount = tmpSize;
+            inliers.swap(tmp);
+        }
+    }
+
+    return dltHomography(inliers);
+}
+
+#endif //COMPUTER_VISION_TRANSFORMS_H

@@ -1,4 +1,4 @@
-#include <hough.h>
+#include <transforms.h>
 
 using namespace pi;
 
@@ -108,25 +108,4 @@ transforms::Hypotheses<detectors::SPoint> transforms::hough(Size imgSize, Size o
     }
 
     return hypotheses;
-}
-
-std::pair<transforms::Hypothesis<detectors::SPoint>, float> transforms::verify(
-                                                             const transforms::Hypotheses<detectors::SPoint>& hypotheses,
-                                                             int matches, float threshold) {
-    auto max = .0f;
-    auto best = -1;
-
-    for(auto it = std::begin(hypotheses), end = std::end(hypotheses); it != end; it++) {
-        auto probability = ((float) it->second.size()) / matches;
-        if(probability > max) {
-            max = probability;
-            best = std::distance(std::begin(hypotheses), it);
-        }
-    }
-
-    if(best != -1 && max >= threshold) {
-        return { hypotheses[best], max};
-    }
-
-    return {{}, 0};
 }

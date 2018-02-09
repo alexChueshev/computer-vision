@@ -11,8 +11,7 @@ add_library(lib
         src/pyramid.cpp inc/pyramid.h
         src/detectors.cpp inc/detectors.h
         src/descriptors.cpp inc/descriptors.hpp inc/descriptors.h
-        src/homography.cpp inc/homography.h
-        src/hough.cpp inc/hough.h)
+        src/transforms.cpp inc/transforms.hpp inc/transforms.h)
 
 find_package(GSL REQUIRED)
 target_link_libraries(lib GSL::gsl GSL::gslcblas)

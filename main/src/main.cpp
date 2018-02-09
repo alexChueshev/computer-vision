@@ -1,6 +1,3 @@
-#include <descriptors.h>
-#include <hough.h>
-
 #include <utils.h>
 
 #include <boost/filesystem.hpp>
