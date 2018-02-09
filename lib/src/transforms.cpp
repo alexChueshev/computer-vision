@@ -3,12 +3,14 @@
 using namespace pi;
 
 namespace {
-    struct _Bin {
-        int xBin;
-        int yBin;
-        int aBin;
-        int scBin;
-    };
+    int _index(int x, int y, int a, int sc, int yBins, int orntBins, int scBins) {
+        auto subWidth = orntBins * scBins;
+        return x * yBins * subWidth + y * subWidth + a * scBins + sc;
+    }
+
+    int _size(int xBins, int yBins, int orntBins, int scBins) {
+        return xBins * yBins * orntBins * scBins;
+    }
 }
 
 transforms::Hypotheses<detectors::SPoint> transforms::hough(Size imgSize, Size objSize,
@@ -34,16 +36,14 @@ transforms::Hypotheses<detectors::SPoint> transforms::hough(Size imgSize, Size o
     auto xBins = (int) std::ceil(imgSize.width / lcBandwidth),
          yBins = (int) std::ceil(imgSize.height / lcBandwidth);
 
-    auto binComparator = [yBins, orntBins, scBins](const auto &b1, const auto &b2) {
-        auto subWidth = orntBins * scBins;
-        return b1.xBin * yBins * subWidth + b1.yBin * subWidth + b1.aBin * scBins + b1.scBin
-                < b2.xBin * yBins * subWidth + b2.yBin * subWidth + b2.aBin * scBins + b2.scBin;
-    };
-    std::map<_Bin, std::vector<SPPairs>, decltype (binComparator)> bins(binComparator);
+    const auto size = _size(xBins, yBins, orntBins, scBins);
+    std::unique_ptr<int[]> bins(new int[size]);
+    std::vector<std::pair<int, int>> refs;
+    std::fill(bins.get(), bins.get() + size, 0);
 
-    for(const auto &pair: pairs) {
-        const auto &fPoint = pair.first;
-        const auto &sPoint = pair.second;
+    for(auto pair = std::begin(pairs), end = std::end(pairs); pair != end; pair++) {
+        const auto &fPoint = pair->first;
+        const auto &sPoint = pair->second;
 
         auto angle = sPoint.angle - fPoint.angle;
         while(angle < 0) angle += 2 * M_PI;
@@ -82,13 +82,9 @@ transforms::Hypotheses<detectors::SPoint> transforms::hough(Size imgSize, Size o
                         auto iscBin = lscBin + (((*scBinVal + scFactor * *scBinVal) / 2) <= scale ?  1 : -1) * isc;
                         if(iscBin < 0 || iscBin >= scBins) continue;
 
-                        _Bin bin{ixBin, iyBin, iaBin, iscBin};
-                        auto bIt = bins.find(bin);
-                        if(bIt != bins.end()) {
-                            bIt->second.push_back(pair);
-                        } else {
-                            bins.insert(std::pair<_Bin, std::vector<SPPairs>>(bin, {pair}));
-                        }
+                        auto index = _index(ixBin, iyBin, iaBin, iscBin, yBins, orntBins, scBins);
+                        bins[index] += 1;
+                        refs.emplace_back(index, std::distance(std::begin(pairs), pair));
                     }
                 }
             }
@@ -96,13 +92,18 @@ transforms::Hypotheses<detectors::SPoint> transforms::hough(Size imgSize, Size o
     }
 
     transforms::Hypotheses<detectors::SPoint> hypotheses;
-    for(const auto &bin : bins) {
-        if(bin.second.size() < 3) continue;
+    for(auto i = 0; i < size; i++) {
+        if(bins[i] < 3) continue;
 
-        auto tmp = transforms::inliers(dltAffine(bin.second), pairs, lcBandwidth * .25f);
-        auto tmpSize = tmp.size();
+        std::vector<SPPairs> voices;
+        for(const auto &ref : refs) {
+            if(ref.first == i) {
+                voices.push_back(pairs[ref.second]);
+            }
+        }
 
-        if(tmpSize >= 3) {
+        auto tmp = transforms::inliers(dltAffine(voices), pairs, lcBandwidth * .25f);
+        if(tmp.size() >= 3) {
             hypotheses.emplace_back(dltAffine(tmp), std::move(tmp));
         }
     }
