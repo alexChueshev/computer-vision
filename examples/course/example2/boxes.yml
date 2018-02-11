@@ -1,0 +1,12 @@
+%YAML:1.0
+---
+Paths:
+   - "/home/alexander/course/example1/objects/box.png"
+   - "/home/alexander/course/example1/backgrounds/boxes.png"
+Probability: 9.2857140302658081e-01
+Transform2d: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: f
+   data: [ 5.35870552e-01, -1.05710633e-01, 1.12553192e+02,
+       7.38437250e-02, 5.22260189e-01, 1.54702759e+02, 0., 0., 1. ]
