@@ -6,6 +6,9 @@
 #include <cfloat>
 #include <vector>
 
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_linalg.h>
+
 namespace pi::detectors {
     struct Point;
 
@@ -32,7 +35,7 @@ namespace pi::detectors {
     std::vector<SPoint> shiTomasi(const std::vector<pyramids::Octave>& dog, const std::vector<SPoint>& blobs,
                                   float threshold = .001f, borders::BorderTypes border = borders::BORDER_REPLICATE);
 
-    std::vector<SPoint> blobs(const std::vector<pyramids::Octave>& dog, float contrastThreshold = 5e-2f,
+    std::vector<SPoint> blobs(const std::vector<pyramids::Octave>& dog, float contrastThreshold = .03,
                               borders::BorderTypes border = borders::BORDER_REPLICATE);
 
     std::vector<Point> adaptiveNonMaximumSuppresion(const std::vector<Point>& points, int quantity, float radiusMax,
@@ -40,9 +43,17 @@ namespace pi::detectors {
 }
 
 namespace pi::detectors::utils {
+    using RIArray3d = std::array<std::reference_wrapper<const Img>, 3>;
+
     float harris(const std::array<float, 3>& values, float k = .04f);
 
     float shiTomasi(const std::array<float, 3>& values);
+
+    std::array<double, 3> pDerivatives3d(const RIArray3d images, int r, int c, const borders::Function& fBorder);
+
+    std::array<double, 9> hessian3d(const RIArray3d images, int r, int c, const borders::Function& fBorder);
+
+    std::array<double, 4> hessian2d(const pi::Img& img, int r, int c, const borders::Function& fBorder);
 }
 
 struct pi::detectors::Point {
