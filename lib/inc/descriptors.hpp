@@ -107,7 +107,7 @@ float descriptors::distance(const Descriptor<T>& descriptor1, const Descriptor<T
         distance += std::pow(descriptor1.data[i] - descriptor2.data[i], 2);
     }
 
-    return distance;
+    return std::sqrt(distance);
 }
 
 template<typename T, typename U>

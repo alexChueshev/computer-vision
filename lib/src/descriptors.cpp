@@ -167,7 +167,7 @@ std::vector<descriptors::SiDescriptor> descriptors::shistogrid(detectors::SPoint
                                                                int histoNums, int bins, borders::BorderTypes border,
                                                                bool is3LInterp) {
     std::vector<SiDescriptor> descriptors;
-    auto scaleHistoSize = histoSize * (int) std::roundf(point.sigma);
+    auto scaleHistoSize = histoSize * (int) std::ceil(point.sigma);
     auto scaleBlockSize = scaleHistoSize * histoNums;
     auto descriptorSize = histoNums * histoNums * bins;
 

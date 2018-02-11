@@ -107,7 +107,7 @@ std::vector<pyramids::Octave> pyramids::dog(const std::vector<Octave>& gpyramid)
         for(auto j = 0; j < layers; j++) {
             auto &first = glayers[j];
             auto &second = glayers[j + 1];
-            dlayers.push_back({opts::difference(first.img, second.img), first.sigma, first.sigmaGlobal});
+            dlayers.push_back({opts::difference(second.img, first.img), first.sigma, first.sigmaGlobal});
         }
 
         dpyramid.push_back(Octave(std::move(dlayers), octave.step(), 0));
