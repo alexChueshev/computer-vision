@@ -140,14 +140,28 @@ std::vector<transforms::PPairs<T>> transforms::inliers(const Transform2d& h,
 }
 
 template<typename T>
-std::pair<transforms::Hypothesis<T>, float> transforms::verify(const transforms::Hypotheses<T>& hypotheses,
+std::pair<transforms::Hypothesis<T>, float> transforms::verify(transforms::Hypotheses<T> hypotheses,
                                                                int matches, float threshold) {
     auto max = .0f;
     auto best = -1;
 
     for(auto it = std::begin(hypotheses), end = std::end(hypotheses); it != end; it++) {
-        auto probability = ((float) it->second.size()) / matches;
-        if(probability > max) {
+        auto &pairs = it->second;
+        std::sort(std::begin(pairs), std::end(pairs), [](const auto &p1, const auto &p2) {
+            if(p1.second.row != p2.second.row) {
+                return p1.second.row > p2.second.row;
+            }
+            return p1.second.col > p2.second.col;
+        });
+
+        auto last = std::unique(std::begin(pairs), std::end(pairs), [](const auto &p1, const auto &p2) {
+            return p1.second.row == p2.second.row && p1.second.col == p2.second.col;
+        });
+
+        auto unique = pairs.size() - std::distance(last, std::end(pairs));
+        auto probability = ((float) pairs.size()) / matches;
+
+        if(unique >= 3 && probability > max) {
             max = probability;
             best = std::distance(std::begin(hypotheses), it);
         }

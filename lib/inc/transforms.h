@@ -47,7 +47,7 @@ namespace pi::transforms {
                                    float threshold);
 
     template<typename T>
-    std::pair<Hypothesis<T>, float> verify(const Hypotheses<T>& hypotheses, int matches, float threshold);
+    std::pair<Hypothesis<T>, float> verify(Hypotheses<T> hypotheses, int matches, float threshold);
 
     template<typename T>
     Transform2d homography(const std::vector<PPairs<T>>& matches,
